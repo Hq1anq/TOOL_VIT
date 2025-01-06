@@ -469,7 +469,7 @@ class Gui_hoat_dong(QRunnable):
                                 status = name + " - đã gửi, chưa kết bạn\n" + status
                             else:
                                 raise Exception
-                        # actions.send_keys(Keys.ENTER).perform()
+                        actions.send_keys(Keys.ENTER).perform()
                         time.sleep(1)
                         close_chat = self.main.driver.find_element(By.XPATH, "//div[@aria-label='Đóng đoạn chat']")
                         actions.click(close_chat).perform()
