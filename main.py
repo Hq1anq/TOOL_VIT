@@ -543,6 +543,7 @@ class Tag_thanh_vien(QRunnable):
             try:
                 delay = float(self.ui.delay.text())
             except: delay = 1
+        error_name = ""
         if self.check_open_post(driver):
             for name in self.list_name:
                 if len(name) > 2:
@@ -552,6 +553,7 @@ class Tag_thanh_vien(QRunnable):
                         while 1:
                             count += 1
                             if count == 10:
+                                error_name += name + " "
                                 break
                             try:
                                 textbox = driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
@@ -574,6 +576,25 @@ class Tag_thanh_vien(QRunnable):
                                 self.handle_chat_close(driver, actions)
                     except:
                         self.main.tag_status_updated.emit("Xảy ra lỗi")
+            cnt = 0
+            while 1:
+                cnt += 1
+                if cnt == 10:
+                    self.main.tag_status_updated.emit("Xảy ra lỗi")
+                    return
+                try:
+                    textbox = driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
+                    is_active = driver.execute_script("return document.activeElement === arguments[0];", textbox)
+                    if is_active == False:
+                        textbox.click()
+                        actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
+                        time.sleep(0.5)
+                    textbox.send_keys(self.comment)
+                    break
+                except:
+                    self.handle_chat_close(driver, actions)
+            self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
+            if self.main.autoSave: self.main.save_data()
         else:
             for name in self.list_name:
                 if len(name) > 2:
@@ -583,6 +604,7 @@ class Tag_thanh_vien(QRunnable):
                         while 1:
                             count += 1
                             if count == 10:
+                                error_name += name + " "
                                 break
                             try:
                                 textbox = driver.find_element(By.XPATH,'//div[@class="xzsf02u x1a2a7pz x1n2onr6 x14wi4xw notranslate"]')
@@ -605,25 +627,25 @@ class Tag_thanh_vien(QRunnable):
                                 self.handle_chat_close(driver, actions)
                     except:
                         self.main.tag_status_updated.emit("Xảy ra lỗi")
-        count = 0
-        while 1:
-            count += 1
-            if count == 10:
-                self.main.tag_status_updated.emit("Xảy ra lỗi")
-                break
-            try:
-                textbox = driver.find_element(By.XPATH,'//div[@class="xzsf02u x1a2a7pz x1n2onr6 x14wi4xw notranslate"]')
-                is_active = driver.execute_script("return document.activeElement === arguments[0];", textbox)
-                if is_active == False:
-                    textbox.click()
-                    actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
-                    time.sleep(0.5)
-                textbox.send_keys(self.comment)
-                break
-            except:
-                self.handle_chat_close(driver, actions)
-        self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
-        if self.main.autoSave: self.main.save_data()
+            cnt = 0
+            while 1:
+                cnt += 1
+                if cnt == 10:
+                    self.main.tag_status_updated.emit("Xảy ra lỗi")
+                    return
+                try:
+                    textbox = driver.find_element(By.XPATH,'//div[@class="xzsf02u x1a2a7pz x1n2onr6 x14wi4xw notranslate"]')
+                    is_active = driver.execute_script("return document.activeElement === arguments[0];", textbox)
+                    if is_active == False:
+                        textbox.click()
+                        actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
+                        time.sleep(0.5)
+                    textbox.send_keys(self.comment)
+                    break
+                except:
+                    self.handle_chat_close(driver, actions)
+            self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
+            if self.main.autoSave: self.main.save_data()
     def scroll_to_bottom(self, driver, SCROLL_PAUSE_TIME=1.5):
         # Get scroll height
         last_height = driver.execute_script("return document.body.scrollHeight")
