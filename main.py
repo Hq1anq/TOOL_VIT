@@ -644,7 +644,10 @@ class Tag_thanh_vien(QRunnable):
                     break
                 except:
                     self.handle_chat_close(driver, actions)
-            self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
+            if len(error_name) > 2:
+                self.main.tag_status_updated.emit("Đã tag xong, tag lỗi: ", error_name)
+            else:
+                self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
             if self.main.autoSave: self.main.save_data()
     def scroll_to_bottom(self, driver, SCROLL_PAUSE_TIME=1.5):
         # Get scroll height
