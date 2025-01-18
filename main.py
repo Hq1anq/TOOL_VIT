@@ -41,7 +41,7 @@ HẠN ĐĂNG KÝ: ...'''
         self.driver = None
         self.autoSave = False
         self.error_link = ""
-    
+
         # Remove window tittle bar
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)

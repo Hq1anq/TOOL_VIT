@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/app.ico</file>
     <file>icons/copy.svg</file>
     <file>icons/autoSaveOff.svg</file>
     <file>icons/autoSaveOn-01.svg</file>

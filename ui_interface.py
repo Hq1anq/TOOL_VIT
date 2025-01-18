@@ -509,6 +509,10 @@ class Ui_MainWindow(object):
         icon7.addFile(u":/icons/icons/ImportFromGroup.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.fromGroupCheckbox.setIcon(icon7)
         self.fromGroupCheckbox.setIconSize(QSize(40, 32))
+        
+        icon8 = QIcon()
+        icon8.addFile(u":/icons/icons/app.ico", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        MainWindow.setWindowIcon(icon8)
 
         self.gridLayout_4.addWidget(self.fromGroupCheckbox, 3, 0, 1, 1)
 
