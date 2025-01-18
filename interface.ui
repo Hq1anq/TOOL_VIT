@@ -429,30 +429,6 @@ border: none</string>
        <number>0</number>
       </property>
       <widget class="QWidget" name="send">
-       <property name="styleSheet">
-        <string notr="true">QPushButton {
-	border: 3px solid rgb(52, 59, 72);
-	border-radius: 5px;	
-	background-color: rgb(52, 59, 72);
-	padding: 10px }
-QPushButton:hover {
-	background-color: rgb(57, 65, 80);
-	border: 3px solid rgb(61, 70, 86) }
-QPushButton:pressed {	
-	background-color: rgb(35, 40, 49);
-	border: 3px solid rgb(43, 50, 61) }
-QLabel { qproperty-alignment: AlignCenter}
-QPlainTextEdit, QLineEdit {
-	background-color: rgb(33, 37, 43);
-	border-radius: 5px;
-	border: 2px solid rgb(33, 37, 43);
-	padding-left: 3px;
-	selection-color: rgb(255, 255, 255);
-	selection-background-color: rgb(255, 121, 198);
-	font-size: 15pt }
-QPlainTextEdit:hover, QLineEdit:hover { border: 2px solid rgb(64, 71, 88) }
-QPlainTextEdit:focus, QLineEdit:focus { border: 2px solid rgb(91, 101, 124) }</string>
-       </property>
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="4" column="1">
          <widget class="QPushButton" name="sendOK">
