@@ -1,0 +1,886 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="toolTipDuration">
+    <number>1</number>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#centralwidget { background-color: #2C313A }
+#contentTop { background-color: rgb(33, 37, 43) }
+*{ border: none }
+QWidget{
+	color: rgb(221, 221, 221);
+	font: 10pt &quot;Segoe UI&quot; }
+QLabel, QPushButton, QPlainTextEdit, QLineEdit, QComboBox, QCheckBox, QToolTip {
+	font-size: 20px }
+QToolTip { 	color: rgb(221, 221, 221) }
+QPushButton {font-weight: bold}
+QComboBox{
+	background-color: rgb(33, 37, 43);
+	border-radius: 5px;
+	border: 2px solid rgb(33, 37, 43);
+	padding: 5px;
+	padding-left: 10px }
+QComboBox:hover{
+	border: 2px solid rgb(64, 71, 88) }
+QComboBox::drop-down {
+	subcontrol-origin: padding;
+	subcontrol-position: top right;
+	width: 25px; 
+	border-left-width: 3px;
+	border-left-color: rgba(39, 44, 54, 150);
+	border-left-style: solid;
+	border-top-right-radius: 3px;
+	border-bottom-right-radius: 3px;
+	background-image: url(:/icons/icons/arrowDown.svg);
+	background-position: center;
+	background-repeat: no-reperat }
+QComboBox QAbstractItemView {
+	color: rgb(255, 121, 198);	
+	background-color: rgb(33, 37, 43);
+	padding: 10px;
+	selection-background-color: rgb(39, 44, 54) }
+QCheckBox::indicator {
+    border: 3px solid rgb(52, 59, 72);
+	width: 15px;
+	height: 15px;
+	border-radius: 10px;
+    background: rgb(44, 49, 60) }
+QCheckBox::indicator:hover { border: 3px solid rgb(58, 66, 81) }
+QCheckBox::indicator:checked {
+    background: 3px solid rgb(52, 59, 72);
+	border: 3px solid rgb(52, 59, 72);
+	background-image: url(:/icons/icons/check.svg) }
+QScrollBar:horizontal {
+	border: none;
+	background: rgb(52, 59, 72);
+	height: 8px;
+	margin: 0px 21px 0 21px;
+	border-radius: 0px }
+QScrollBar::handle:horizontal {
+	background: rgb(189, 147, 249);
+	min-width: 25px;
+	border-radius: 4px }
+QScrollBar::handle:horizontal:hover, QScrollBar::handle:vertical:hover {
+	background: rgb(208, 181, 249) }
+QScrollBar::handle:horizontal:pressed, QScrollBar::handle:vertical:pressed {
+	background: rgb(161, 103, 249) }
+QScrollBar::add-line:horizontal {
+	border: none;
+	background: rgb(55, 63, 77);
+	width: 20px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	subcontrol-position: right;
+	subcontrol-origin: margin }
+QScrollBar::sub-line:horizontal {
+	border: none;
+	background: rgb(55, 63, 77);
+	width: 20px;
+	border-top-left-radius: 4px;
+	border-bottom-left-radius: 4px;
+	subcontrol-position: left;
+	subcontrol-origin: margin }
+QScrollBar::up-arrow:horizontal, QScrollBar::down-arrow:horizontal,
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal,
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+	background: none }
+QScrollBar:vertical {
+	border: none;
+    background: rgb(52, 59, 72);
+    width: 8px;
+    margin: 21px 0 21px 0;
+	border-radius: 0px }
+QScrollBar::handle:vertical {	
+	background: rgb(189, 147, 249);
+	min-height: 25px;
+	border-radius: 4px }
+QScrollBar::add-line:vertical {
+	border: none;
+	background: rgb(55, 63, 77);
+	height: 20px;
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	subcontrol-position: bottom;
+	subcontrol-origin: margin }
+QScrollBar::sub-line:vertical {
+	border: none;
+	background: rgb(55, 63, 77);
+	height: 20px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	subcontrol-position: top;
+	subcontrol-origin: margin }
+QScrollBar::add-line:horizontal:hover, QScrollBar::sub-line:horizontal:hover,
+QScrollBar::add-line:vertical:hover, QScrollBar::sub-line:vertical:hover {
+	background: rgb(64, 69, 77) }
+QScrollBar::add-line:horizontal:pressed, QScrollBar::sub-line:horizontal:pressed,
+QScrollBar::add-line:vertical:pressed, QScrollBar::sub-line:vertical:pressed {
+	background: rgb(189, 147, 249) }
+QPushButton {
+	border: 3px solid rgb(52, 59, 72);
+	border-radius: 5px;	
+	background-color: rgb(52, 59, 72);
+	padding: 10px }
+QPushButton:hover {
+	background-color: rgb(57, 65, 80);
+	border: 3px solid rgb(61, 70, 86) }
+QPushButton:pressed {	
+	background-color: rgb(35, 40, 49);
+	border: 3px solid rgb(43, 50, 61) }
+QLabel { qproperty-alignment: AlignCenter }
+QPlainTextEdit, QLineEdit {
+	background-color: rgb(33, 37, 43);
+	border-radius: 5px;
+	border: 2px solid rgb(33, 37, 43);
+	padding-left: 3px;
+	selection-color: rgb(255, 255, 255);
+	selection-background-color: rgb(255, 121, 198) }
+QPlainTextEdit:hover, QLineEdit:hover { border: 2px solid rgb(64, 71, 88) }
+QPlainTextEdit:focus, QLineEdit:focus { border: 2px solid rgb(91, 101, 124) }</string>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item row="4" column="0" colspan="2">
+     <widget class="QFrame" name="bottomBar">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>22</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>22</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(33, 37, 43)</string>
+      </property>
+      <layout class="QHBoxLayout" name="_31">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item alignment="Qt::AlignmentFlag::AlignLeft">
+        <widget class="QPushButton" name="credits">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 11px; color: rgb(113, 126, 149);
+border: none; padding: none; padding-left: 10px; padding-right: 10px</string>
+         </property>
+         <property name="text">
+          <string> cre: h0anq.qianq</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/icons/icons/meta.svg</normaloff>:/icons/icons/meta.svg</iconset>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignmentFlag::AlignRight">
+        <widget class="QFrame" name="sizeGrip">
+         <property name="minimumSize">
+          <size>
+           <width>22</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="cursor">
+          <cursorShape>SizeFDiagCursor</cursorShape>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QFrame" name="contentTop">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton {
+	border: 3px;
+	border-radius: 5px;	
+	background-color: transparent;
+	padding: 10px }
+QPushButton:hover {
+	background-color: rgb(57, 65, 80);
+	border: 3px solid rgb(61, 70, 86) }
+QPushButton:pressed {	
+	background-color: rgb(35, 40, 49);
+	border: 3px solid rgb(43, 50, 61) }
+QLabel { qproperty-alignment: AlignVCenter }</string>
+      </property>
+      <layout class="QHBoxLayout" name="_15">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>7</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="autoSave">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: transparent;
+border: none</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/icons/icons/autoSaveOff.svg</normaloff>
+           <normalon>:/icons/icons/autoSaveOn-01.svg</normalon>:/icons/icons/autoSaveOff.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>50</width>
+           <height>25</height>
+          </size>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox">
+         <item>
+          <property name="text">
+           <string>GỬI HOẠT ĐỘNG</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>TAG THÀNH VIÊN</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="dragLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignmentFlag::AlignRight">
+        <widget class="QFrame" name="navigationBar">
+         <layout class="QHBoxLayout" name="_16">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="minimizeBtn">
+            <property name="font">
+             <font>
+              <family>Segoe UI</family>
+              <pointsize>-1</pointsize>
+              <italic>false</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/minimize.svg</normaloff>:/icons/icons/minimize.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="changeWindowBtn">
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/maximize.svg</normaloff>
+              <normalon>:/icons/icons/restore.svg</normalon>:/icons/icons/maximize.svg</iconset>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="closeBtn">
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icons/icons/close.svg</normaloff>:/icons/icons/close.svg</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QFrame" name="cookieFrame">
+      <property name="frameShape">
+       <enum>QFrame::Shape::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Raised</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Cookie</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="cookieInput"/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="send">
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+	border: 3px solid rgb(52, 59, 72);
+	border-radius: 5px;	
+	background-color: rgb(52, 59, 72);
+	padding: 10px }
+QPushButton:hover {
+	background-color: rgb(57, 65, 80);
+	border: 3px solid rgb(61, 70, 86) }
+QPushButton:pressed {	
+	background-color: rgb(35, 40, 49);
+	border: 3px solid rgb(43, 50, 61) }
+QLabel { qproperty-alignment: AlignCenter}
+QPlainTextEdit, QLineEdit {
+	background-color: rgb(33, 37, 43);
+	border-radius: 5px;
+	border: 2px solid rgb(33, 37, 43);
+	padding-left: 3px;
+	selection-color: rgb(255, 255, 255);
+	selection-background-color: rgb(255, 121, 198);
+	font-size: 15pt }
+QPlainTextEdit:hover, QLineEdit:hover { border: 2px solid rgb(64, 71, 88) }
+QPlainTextEdit:focus, QLineEdit:focus { border: 2px solid rgb(91, 101, 124) }</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="4" column="1">
+         <widget class="QPushButton" name="sendOK">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>70</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Gửi!</string>
+          </property>
+          <property name="toolTipDuration">
+           <number>2000</number>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/icons/icons/post.svg</normaloff>:/icons/icons/post.svg</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="label_5">
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>-1</pointsize>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Nhập link facebook</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="QPlainTextEdit" name="listLink">
+          <property name="plainText">
+           <string/>
+          </property>
+          <property name="placeholderText">
+           <string>Ngăn cách bởi dấu xuống dòng</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>-1</pointsize>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Nhập hoạt động cần gửi</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" rowspan="2">
+         <widget class="QPlainTextEdit" name="message">
+          <property name="plainText">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2" rowspan="5">
+         <widget class="QFrame" name="logFrame">
+          <property name="frameShape">
+           <enum>QFrame::Shape::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Shadow::Raised</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QLabel" name="label_8">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Segoe UI</family>
+                 <pointsize>-1</pointsize>
+                 <italic>false</italic>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Log</string>
+               </property>
+              </widget>
+             </item>
+             <item alignment="Qt::AlignmentFlag::AlignRight">
+              <widget class="QPushButton" name="copyLogBtn">
+               <property name="maximumSize">
+                <size>
+                 <width>30</width>
+                 <height>33</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>Copy các link bị lỗi</string>
+               </property>
+               <property name="toolTipDuration">
+                <number>3000</number>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="resources.qrc">
+                 <normaloff>:/icons/icons/copy.svg</normaloff>:/icons/icons/copy.svg</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>15</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QPlainTextEdit" name="sendLog">
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tag">
+       <layout class="QGridLayout" name="gridLayout_4">
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <item row="4" column="0" colspan="6">
+         <widget class="QPlainTextEdit" name="listName">
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>-1</pointsize>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="plainText">
+           <string/>
+          </property>
+          <property name="placeholderText">
+           <string>Nhập list tên thành viên (Văn A, Thị B, ...)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="6">
+         <widget class="QFrame" name="frame_2">
+          <property name="frameShape">
+           <enum>QFrame::Shape::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Shadow::Raised</enum>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Nhập link post</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="linkPost"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="5" column="4">
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>5</number>
+          </property>
+          <item>
+           <widget class="QCheckBox" name="delayCheckbox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Delay</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="delay">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="placeholderText">
+             <string>đơn vị: giây</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="delayLabel">
+            <property name="text">
+             <string>ví dụ: 3, 2, 0.5, 1.5</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="6" column="0" colspan="6">
+         <widget class="QLabel" name="tagStatus">
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>-1</pointsize>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="5">
+         <widget class="QPushButton" name="getNameBtn">
+          <property name="toolTip">
+           <string>Lấy list thành viên của nhóm</string>
+          </property>
+          <property name="toolTipDuration">
+           <number>3000</number>
+          </property>
+          <property name="text">
+           <string>OK</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="5">
+         <widget class="QPushButton" name="tagOK">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>70</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Tag!</string>
+          </property>
+          <property name="toolTipDuration">
+           <number>2000</number>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/icons/icons/post.svg</normaloff>:/icons/icons/post.svg</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="fromGroupCheckbox">
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>-1</pointsize>
+            <italic>false</italic>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Lấy từ nhóm facebook</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/icons/icons/ImportFromGroup.svg</normaloff>:/icons/icons/ImportFromGroup.svg</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>40</width>
+            <height>32</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="4">
+         <widget class="QFrame" name="frame">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>120</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Shape::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Shadow::Raised</enum>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_11">
+             <property name="font">
+              <font>
+               <family>Segoe UI</family>
+               <pointsize>-1</pointsize>
+               <italic>false</italic>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Nhập comment</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPlainTextEdit" name="comment">
+             <property name="font">
+              <font>
+               <family>Segoe UI</family>
+               <pointsize>-1</pointsize>
+               <italic>false</italic>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="plainText">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="3" column="1" colspan="4">
+         <widget class="QLineEdit" name="linkForName">
+          <property name="placeholderText">
+           <string>Điền link nhóm facebook</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

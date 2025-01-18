@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/copy.svg</file>
+    <file>icons/autoSaveOff.svg</file>
+    <file>icons/autoSaveOn-01.svg</file>
+    <file>icons/check.svg</file>
+    <file>icons/arrowDown.svg</file>
+    <file>icons/ImportFromGroup.svg</file>
+    <file>icons/meta.svg</file>
+    <file>icons/post.svg</file>
+    <file>icons/close.svg</file>
+    <file>icons/maximize.svg</file>
+    <file>icons/minimize.svg</file>
+    <file>icons/restore.svg</file>
+  </qresource>
+</RCC>

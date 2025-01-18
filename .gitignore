@@ -1,0 +1,7 @@
+__pycache__
+build
+ChromeData
+dist
+Data.xlsx
+ToolVIT.spec
+test.py
