@@ -43,9 +43,10 @@ HẠN ĐĂNG KÝ: ...'''
         self.error_link = ""
         
         self.language = "vi"
-        self.friend_str = "Bạn bè"
+        self.forgot_str = "Quên mật khẩu"
         self.message_str = "Nhắn tin"
         self.close_chat_str = "Đóng đoạn chat"
+        self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị"]
 
         # Remove window tittle bar
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -283,6 +284,46 @@ HẠN ĐĂNG KÝ: ...'''
         self.ui.delay.hide()
         self.ui.delayLabel.hide()
         self.ui.logFrame.hide()
+    def setupDriver(self):
+        try: self.driver.title
+        except:
+            options = Options()
+            options.add_experimental_option("detach", True) # Giữ cửa sổ mở
+            options.add_experimental_option("excludeSwitches", ['enable-automation'])
+            currentDirectory = os.getcwd()
+            profilePath = os.path.join(currentDirectory, "ChromeData")
+            options.add_argument("user-data-dir=" + profilePath) # Chỉ định profile cho browser
+            options.add_argument("--disable-notifications")
+            options.add_argument("--window-size=1130,500")
+            try:
+                self.driver = webdriver.Chrome(options=options)
+            except:
+                if self.ui.stackedWidget.currentWidget() == self.ui.send:
+                    self.log_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
+                elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
+                    self.tag_status_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
+                return
+            self.driver.implicitly_wait(5)
+            self.driver.set_window_position(0, 0)
+            self.driver.set_window_size(1130, 500)
+            self.driver.get("https://www.facebook.com/login")
+            self.language = self.driver.find_element(By.XPATH, "//html").get_attribute('lang')
+            self.adjustLanguage()
+    def is_login(self):
+        return self.forgot_str not in self.driver.page_source
+    def adjustLanguage(self):
+        if self.language != "en":
+            self.message_str = "Nhắn tin"
+            self.close_chat_str = "Đóng đoạn chat"
+            self.friend_str = "Bạn bè"
+            self.forgot_str = "Quên mật khẩu"
+            self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị"]
+        else:
+            self.message_str = "Message"
+            self.close_chat_str = "Close chat"
+            self.friend_str = "Friends"
+            self.forgot_str = "Forgotten password"
+            self.error_messages = ["This content isn't available right now", "This Page Isn't Available"]
     def copy_error_link(self):
         pyperclip.copy(self.error_link)
         self.log_updated.emit(f"Đã copy các link bị lỗi!\n{self.ui.sendLog.toPlainText()}")
@@ -323,44 +364,12 @@ HẠN ĐĂNG KÝ: ...'''
         elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
             self.tag_status_updated.emit(f"Đã lưu dữ liệu vào file {self.file_path}")
     def access_credit(self):
-        if self.driver is None:
-            options = Options()
-            options.add_experimental_option("detach", True) # Giữ cửa sổ mở
-            options.add_experimental_option("excludeSwitches", ['enable-automation'])
-            currentDirectory = os.getcwd()
-            profilePath = os.path.join(currentDirectory, "ChromeData")
-            options.add_argument("user-data-dir=" + profilePath) # Chỉ định profile cho browser
-            options.add_argument("--disable-notifications")
-            options.add_argument("--window-size=1130,500")
-            try:
-                self.driver = webdriver.Chrome(options=options)
-            except:
-                self.log_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
-                return
-            self.driver.implicitly_wait(5)
-        try:
-            self.driver.execute_script('window.open("https://www.facebook.com/h0anq.qianq/")')
-            self.driver.switch_to.window(self.driver.window_handles[0])
-        except:
-            options = Options()
-            options.add_experimental_option("detach", True) # Giữ cửa sổ mở
-            options.add_experimental_option("excludeSwitches", ['enable-automation'])
-            currentDirectory = os.getcwd()
-            profilePath = os.path.join(currentDirectory, "ChromeData")
-            options.add_argument("user-data-dir=" + profilePath) # Chỉ định profile cho browser
-            options.add_argument("--disable-notifications")
-            options.add_argument("--window-size=1130,500")
-            try:
-                self.driver = webdriver.Chrome(options=options)
-            except:
-                self.log_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
-                return
-            self.driver.implicitly_wait(5)
-            self.driver.execute_script('window.open("https://www.facebook.com/h0anq.qianq/")')
-            self.driver.switch_to.window(self.driver.window_handles[0])
+        self.setupDriver()
+        self.driver.execute_script('window.open("https://www.facebook.com/h0anq.qianq/")')
+        self.driver.switch_to.window(self.driver.window_handles[0])
         
 class Gui_hoat_dong(QRunnable):
-    def __init__(self, main):
+    def __init__(self, main: "MainWindow"):
         super().__init__()
         self.main = main
         self.ui = main.ui
@@ -369,43 +378,15 @@ class Gui_hoat_dong(QRunnable):
         self.message = ""
     @Slot()
     def run(self):
-        try:
-            self.main.driver.title
-        except:
-            options = Options()
-            options.add_experimental_option("detach", True) # Giữ cửa sổ mở
-            options.add_experimental_option("excludeSwitches", ['enable-automation'])
-            currentDirectory = os.getcwd()
-            profilePath = os.path.join(currentDirectory, "ChromeData")
-            options.add_argument("user-data-dir=" + profilePath) # Chỉ định profile cho browser
-            options.add_argument("--disable-notifications")
-            options.add_argument("--window-size=1130,500")
-            try:
-                self.main.driver = webdriver.Chrome(options=options)
-            except:
-                self.main.log_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
-                return
-            self.main.driver.implicitly_wait(5)
-        self.main.driver.get("https://facebook.com")
-        self.main.language = self.main.driver.find_element(By.XPATH, "//html").get_attribute('lang')
-        if self.main.language != "en":
-            self.main.message_str = "Nhắn tin"
-            self.main.close_chat_str = "Đóng đoạn chat"
-            self.main.friend_str = "Bạn bè"
-        else:
-            self.main.message_str = "Message"
-            self.main.close_chat_str = "Close chat"
-            self.main.friend_str = "Friends"
-        self.main.driver.set_window_position(0, 0)
-        self.main.driver.set_window_size(1130, 500)
-        if self.isLogin(self.main.driver):
+        self.main.setupDriver()
+        if self.main.is_login():
             pass
         else:
             self.cookies = self.ui.cookieInput.text()
             if self.cookies != "":
                 self.AddCookie(self.cookies, self.main.driver)
                 self.main.driver.refresh()
-                if not self.isLogin(self.main.driver):
+                if not self.main.is_login():
                     self.main.log_updated.emit("Chưa đăng nhập, sai cookie")
                     return
             else:
@@ -416,8 +397,8 @@ class Gui_hoat_dong(QRunnable):
         self.message = self.ui.message.toPlainText()
         pyperclip.copy(self.message)
         actions = ActionChains(self.main.driver)
-        self.list_link = [x.strip() for x in self.ui.listLink.toPlainText().split("\n")]
-        if self.message == "" or len(self.list_link) == 0:
+        self.list_link = [x.strip() for x in self.ui.listLink.toPlainText().split("\n") if x.strip()]
+        if not bool(self.list_link):
             self.main.log_updated.emit("Thiếu thông tin: Hoạt động")
             return
         self.main.error_link = ""
@@ -523,7 +504,7 @@ class Gui_hoat_dong(QRunnable):
         self.main.error_link = self.main.error_link.strip()
         self.main.log_updated.emit(status)
         if self.main.autoSave: self.main.save_data()
-    def handle_chat_close(self, driver):
+    def handle_chat_close(self, driver: webdriver.Chrome):
         script = f"""
         let closeButtons = document.evaluate(
             "//div[@aria-label='{self.main.close_chat_str}']",
@@ -540,15 +521,13 @@ class Gui_hoat_dong(QRunnable):
 
         # Execute the JavaScript in the browser
         driver.execute_script(script)
-    def isLogin(self, driver):
-        return self.main.friend_str in driver.page_source
-    def AddCookie(self, cookie_string, driver):
+    def AddCookie(self, cookie_string: str, driver: webdriver.Chrome):
         cookies = [cookie.strip() for cookie in cookie_string.split(';')]
         for cookie in cookies:
             name, value = cookie.split('=', 1)
             driver.add_cookie({'name': name, 'value': value})
 class Tag_thanh_vien(QRunnable):
-    def __init__(self, main, action):
+    def __init__(self, main: "MainWindow", action: str):
         super().__init__()
         self.main = main
         self.action = action
@@ -557,7 +536,7 @@ class Tag_thanh_vien(QRunnable):
         self.list_name = []
         self.comment = ""
     @Slot()
-    def handle_chat_close(self, driver):
+    def handle_chat_close(self, driver: webdriver.Chrome):
         script = f"""
         let closeButtons = document.evaluate(
             "//div[@aria-label='{self.main.close_chat_str}']",
@@ -573,33 +552,26 @@ class Tag_thanh_vien(QRunnable):
         """
         # Execute the JavaScript in the browser
         driver.execute_script(script)
-    def isLogin(self, driver):
-        return self.main.friend_str in driver.page_source
-    def AddCookie(self, cookie_string, driver):
+    def AddCookie(self, cookie_string: str, driver: webdriver.Chrome):
         cookies = [cookie.strip() for cookie in cookie_string.split(';')]
         for cookie in cookies:
             name, value = cookie.split('=', 1)
             driver.add_cookie({'name': name, 'value': value})
-    def check_open_post(self, driver):
+    def check_open_post(self, driver: webdriver.Chrome):
         div = driver.find_element(By.XPATH, "//div[@role='banner']/following-sibling::div[1]")
         if div.get_attribute("class") == "x9f619 x1n2onr6 x1ja2u2z":
             return False
         else: return True
-    def tag(self, driver):
+    def tag(self, driver: webdriver.Chrome):
         self.list_name = list(map(str.strip, self.ui.listName.toPlainText().split(",")))
         self.comment = self.ui.comment.toPlainText()
         if self.comment == "" or len(self.list_name) == 0:
             self.main.tag_status_updated.emit("Thiếu thông tin: Tag thành viên")
             return
         driver.get(self.ui.linkPost.text())
-        if self.main.language != "en":
-            if ("Bạn hiện không xem được nội dung này" in driver.page_source) or ("Trang này không hiển thị" in driver.page_source):
-                self.main.tag_status_updated.emit("Không thể thao tác với bài đăng!")
-                return
-        else:
-            if ("This content isn't available right now" in driver.page_source):
-                self.main.tag_status_updated.emit("Không thể thao tác với bài đăng!")
-                return
+        if any(message in driver.page_source for message in self.main.error_messages):
+            self.main.tag_status_updated.emit("Không thể thao tác với bài đăng!")
+            return
         self.main.tag_status_updated.emit("Đang tag thành viên...")
         actions = ActionChains(driver)
         delay = 1
@@ -652,7 +624,8 @@ class Tag_thanh_vien(QRunnable):
                         textbox.click()
                         actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
                         time.sleep(0.5)
-                    textbox.send_keys(self.comment)
+                    pyperclip.copy(self.comment)
+                    actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
                     break
                 except:
                     self.handle_chat_close(driver)
@@ -702,7 +675,8 @@ class Tag_thanh_vien(QRunnable):
                         textbox.click()
                         actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
                         time.sleep(0.5)
-                    textbox.send_keys(self.comment)
+                    pyperclip.copy(self.comment)
+                    actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
                     break
                 except:
                     self.handle_chat_close(driver)
@@ -711,7 +685,7 @@ class Tag_thanh_vien(QRunnable):
             else:
                 self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
             if self.main.autoSave: self.main.save_data()
-    def scroll_to_bottom(self, driver, SCROLL_PAUSE_TIME=1.5):
+    def scroll_to_bottom(self, driver: webdriver.Chrome, SCROLL_PAUSE_TIME=1.5):
         # Get scroll height
         last_height = driver.execute_script("return document.body.scrollHeight")
 
@@ -727,7 +701,7 @@ class Tag_thanh_vien(QRunnable):
             if new_height == last_height:
                 break
             last_height = new_height
-    def get_member_name(self, driver):
+    def get_member_name(self, driver: webdriver.Chrome):
         try:
             group_id = self.ui.linkForName.text().split("groups/")[1].split("/")[0]
         except:
@@ -736,7 +710,6 @@ class Tag_thanh_vien(QRunnable):
         if group_id == "":
             self.main.tag_status_updated.emit("Thiếu thông tin: Link nhóm")
             return
-        actions = ActionChains(driver)
         count = 0
         while 1:
             count += 1
@@ -745,14 +718,9 @@ class Tag_thanh_vien(QRunnable):
                 break
             try:
                 driver.get(f"https://www.facebook.com/groups/{group_id}/members")
-                if self.main.language != "en":
-                    if ("Bạn hiện không xem được nội dung này" in driver.page_source) or ("Trang này không hiển thị" in driver.page_source):
-                        self.main.tag_status_updated.emit("Không thể truy cập nhóm!")
-                        return
-                else:
-                    if ("This content isn't available right now" in driver.page_source):
-                        self.main.tag_status_updated.emit("Không thể truy cập nhóm!")
-                        return
+                if any(message in driver.page_source for message in self.main.error_messages):
+                    self.main.tag_status_updated.emit("Không thể truy cập nhóm!")
+                    return
                 self.main.tag_status_updated.emit("Đang lấy danh sách tên thành viên...")
                 self.scroll_to_bottom(driver)
                 list_member = driver.find_elements(By.XPATH,'//div[@class="html-div x11i5rnm x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1oo3vh0 x1rdy4ex"]')[-1].find_elements(By.XPATH, "./*")
@@ -770,39 +738,15 @@ class Tag_thanh_vien(QRunnable):
         self.main.tag_status_updated.emit(f"Đã lấy xong danh sách tên thành viên: {member_count} người")
         if self.main.autoSave: self.main.save_data()
     def run(self):
-        try: self.main.driver.title
-        except:
-            options = Options()
-            options.add_experimental_option("detach", True) # Giữ cửa sổ mở
-            options.add_experimental_option("excludeSwitches", ['enable-automation'])
-            currentDirectory = os.getcwd()
-            profilePath = os.path.join(currentDirectory, "ChromeData")
-            options.add_argument("user-data-dir=" + profilePath) # Chỉ định profile cho browser
-            options.add_argument("--disable-notifications")
-            options.add_argument("--window-size=1130,500")
-            try:
-                self.main.driver = webdriver.Chrome(options=options)
-            except:
-                self.main.tag_status_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
-                return
-            self.main.driver.implicitly_wait(5)
-        self.main.driver.get("https://facebook.com")
-        self.main.language = self.main.driver.find_element(By.XPATH, "//html").get_attribute('lang')
-        if self.main.language != "en":
-            self.main.close_chat_str = "Đóng đoạn chat"
-            self.main.friend_str = "Bạn bè"
-        else:
-            self.main.close_chat_str = "Close chat"
-            self.main.friend_str = "Friends"
-        self.main.driver.set_window_position(0, 0)
-        if self.isLogin(self.main.driver):
+        self.main.setupDriver()
+        if self.main.is_login():
             pass
         else:
             self.cookies = self.ui.cookieInput.text()
             if self.cookies != "":
                 self.AddCookie(self.cookies, self.main.driver)
                 self.main.driver.refresh()
-                if not self.isLogin(self.main.driver):
+                if not self.main.is_login():
                     self.main.tag_status_updated.emit("Chưa đăng nhập, sai cookie")
                     return
             else:
@@ -813,15 +757,15 @@ class Tag_thanh_vien(QRunnable):
         elif self.action == "get_member_name":
             self.get_member_name(self.main.driver)
 
-def run_gui_hoat_dong(ui):
-    ui.move(ui.screen().size().width()- ui.size().width(), ui.screen().size().height() - ui.size().height() - 50)
-    ui.ui.logFrame.show()
-    worker = Gui_hoat_dong(ui)
+def run_gui_hoat_dong(main: "MainWindow"):
+    main.move(main.screen().size().width()- main.size().width(), main.screen().size().height() - main.size().height() - 50)
+    main.ui.logFrame.show()
+    worker = Gui_hoat_dong(main)
     QThreadPool.globalInstance().start(worker)
-def run_tag_thanh_vien(ui, action = "tag"):
-    ui.move(ui.screen().size().width()- ui.size().width(), ui.screen().size().height() - ui.size().height() - 50)
-    ui.ui.logFrame.show()
-    worker = Tag_thanh_vien(ui, action)
+def run_tag_thanh_vien(main: "MainWindow", action = "tag"):
+    main.move(main.screen().size().width()- main.size().width(), main.screen().size().height() - main.size().height() - 50)
+    main.ui.logFrame.show()
+    worker = Tag_thanh_vien(main, action)
     QThreadPool.globalInstance().start(worker)
 if __name__ == "__main__":
     if not os.path.exists("ChromeData"): # Nếu chưa có Folder lưu data -> Tạo
