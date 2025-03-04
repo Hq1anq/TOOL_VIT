@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'interfaceTLYCNg.ui'
+## Form generated from reading UI file 'interfacemTuXsa.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.7.2
 ##
@@ -160,7 +160,21 @@ class Ui_MainWindow(object):
 "	selection-color: rgb(255, 255, 255);\n"
 "	selection-background-color: rgb(255, 121, 198) }\n"
 "QPlainTextEdit:hover, QLineEdit:hover { border: 2px solid rgb(64, 71, 88) }\n"
-"QPlainTextEdit:focus, QLineEdit:focus { border: 2px solid rgb(91, 101, 124) }")
+"QPlainTextEdit:focus, QLineEdit:focus { border: 2px solid rgb(91, 101, 124) }\n"
+"QMenu {\n"
+"	background-color: rgb(51, 57, 66);\n"
+"    border: 1px solid black;\n"
+"}\n"
+"\n"
+"QMenu::item {\n"
+"    background-color: transparent;\n"
+"    color: rgb(221, 221, 221);\n"
+""
+                        "}\n"
+"\n"
+"QMenu::item:selected { /* when user selects item using mouse or keyboard */\n"
+"    background-color: #654321;\n"
+"}")
         self.gridLayout = QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
@@ -317,28 +331,6 @@ class Ui_MainWindow(object):
         self.stackedWidget.setObjectName(u"stackedWidget")
         self.send = QWidget()
         self.send.setObjectName(u"send")
-        self.send.setStyleSheet(u"QPushButton {\n"
-"	border: 3px solid rgb(52, 59, 72);\n"
-"	border-radius: 5px;	\n"
-"	background-color: rgb(52, 59, 72);\n"
-"	padding: 10px }\n"
-"QPushButton:hover {\n"
-"	background-color: rgb(57, 65, 80);\n"
-"	border: 3px solid rgb(61, 70, 86) }\n"
-"QPushButton:pressed {	\n"
-"	background-color: rgb(35, 40, 49);\n"
-"	border: 3px solid rgb(43, 50, 61) }\n"
-"QLabel { qproperty-alignment: AlignCenter}\n"
-"QPlainTextEdit, QLineEdit {\n"
-"	background-color: rgb(33, 37, 43);\n"
-"	border-radius: 5px;\n"
-"	border: 2px solid rgb(33, 37, 43);\n"
-"	padding-left: 3px;\n"
-"	selection-color: rgb(255, 255, 255);\n"
-"	selection-background-color: rgb(255, 121, 198);\n"
-"	font-size: 15pt }\n"
-"QPlainTextEdit:hover, QLineEdit:hover { border: 2px solid rgb(64, 71, 88) }\n"
-"QPlainTextEdit:focus, QLineEdit:focus { border: 2px solid rgb(91, 101, 124) }")
         self.gridLayout_2 = QGridLayout(self.send)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.sendOK = QPushButton(self.send)
@@ -509,10 +501,6 @@ class Ui_MainWindow(object):
         icon7.addFile(u":/icons/icons/ImportFromGroup.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.fromGroupCheckbox.setIcon(icon7)
         self.fromGroupCheckbox.setIconSize(QSize(40, 32))
-        
-        icon8 = QIcon()
-        icon8.addFile(u":/icons/icons/app.ico", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        MainWindow.setWindowIcon(icon8)
 
         self.gridLayout_4.addWidget(self.fromGroupCheckbox, 3, 0, 1, 1)
 
@@ -601,4 +589,3 @@ class Ui_MainWindow(object):
         self.comment.setPlainText("")
         self.linkForName.setPlaceholderText(QCoreApplication.translate("MainWindow", u"\u0110i\u1ec1n link nh\u00f3m facebook", None))
     # retranslateUi
-

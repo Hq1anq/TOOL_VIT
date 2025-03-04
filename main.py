@@ -5,7 +5,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from PySide6.QtWidgets import QMainWindow, QApplication, QSizeGrip
 from PySide6.QtCore import QPoint, Qt, QEvent, QRunnable, Slot, QThreadPool, QTimer, Signal
-from PySide6.QtGui import QShortcut, QKeySequence, QGuiApplication
+from PySide6.QtGui import QShortcut, QKeySequence, QMouseEvent
 import time, sys, os
 import pyperclip
 import pandas as pd
@@ -43,21 +43,21 @@ HẠN ĐĂNG KÝ: ...'''
         self.error_link = ""
         
         self.language = "vi"
-        self.forgot_str = "Quên mật khẩu"
+        self.login_str = "Log in"
         self.message_str = "Nhắn tin"
         self.close_chat_str = "Đóng đoạn chat"
-        self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị"]
+        self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị", "Trang n\u00e0y kh\u00f4ng hi\u1ec3n th\u1ecb", "B\u1ea1n hi\u1ec7n kh\u00f4ng xem \u0111\u01b0\u1ee3c n\u1ed9i dung n\u00e0y"]
 
         # Remove window tittle bar
-        self.setWindowFlags(Qt.FramelessWindowHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        def doubleClickMaximizeRestore(event):
-            if event.type() == QEvent.MouseButtonDblClick:
+        def doubleClickMaximizeRestore(event: QMouseEvent):
+            if event.type() == QEvent.Type.MouseButtonDblClick:
                 self.ui.changeWindowBtn.click()
         self.ui.contentTop.mouseDoubleClickEvent = doubleClickMaximizeRestore
 
-        def moveWindow(event):
+        def moveWindow(event: QMouseEvent):
             if self.isMaximized() == True:
                 self.showNormal()
                 self.move(event.globalPosition().toPoint() - QPoint(900/2, 0))
@@ -303,26 +303,28 @@ HẠN ĐĂNG KÝ: ...'''
                 elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
                     self.tag_status_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
                 return
-            self.driver.implicitly_wait(5)
+            self.driver.implicitly_wait(10)
             self.driver.set_window_position(0, 0)
             self.driver.set_window_size(1130, 500)
-            self.driver.get("https://www.facebook.com/login")
-            self.language = self.driver.find_element(By.XPATH, "//html").get_attribute('lang')
-            self.adjustLanguage()
+        self.driver.get("https://www.facebook.com")
+        self.adjustLanguage()
     def is_login(self):
-        return self.forgot_str not in self.driver.page_source
-    def adjustLanguage(self):
+        return self.login_str not in self.driver.page_source
+    def adjustLanguage(self, force="none"):
+        if force == "none":
+            self.language = self.driver.find_element(By.XPATH, "//html").get_attribute('lang')
+        else: self.language = force
         if self.language != "en":
             self.message_str = "Nhắn tin"
             self.close_chat_str = "Đóng đoạn chat"
             self.friend_str = "Bạn bè"
-            self.forgot_str = "Quên mật khẩu"
-            self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị"]
+            self.login_str = "Đăng nhập"
+            self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị", "Trang n\u00e0y kh\u00f4ng hi\u1ec3n th\u1ecb", "B\u1ea1n hi\u1ec7n kh\u00f4ng xem \u0111\u01b0\u1ee3c n\u1ed9i dung n\u00e0y"]
         else:
             self.message_str = "Message"
             self.close_chat_str = "Close chat"
             self.friend_str = "Friends"
-            self.forgot_str = "Forgotten password"
+            self.login_str = "Log in"
             self.error_messages = ["This content isn't available right now", "This Page Isn't Available"]
     def copy_error_link(self):
         pyperclip.copy(self.error_link)
@@ -410,6 +412,8 @@ class Gui_hoat_dong(QRunnable):
                     link = "https://web." + link
                 try:
                     self.main.driver.get(link)
+                    if "locale=" in link:
+                        self.main.adjustLanguage(link.split("locale=")[1][:2])
                     self.main.driver.execute_script("window.scrollTo(0, 300)")
                     time.sleep(1)
                     lst = self.main.driver.find_elements(By.XPATH, "//div[@class='xsgj6o6 xw3qccf x1xmf6yo x1w6jkce xusnbm3']")
@@ -432,6 +436,8 @@ class Gui_hoat_dong(QRunnable):
                         count += 1
                         if count == 5:
                             self.main.driver.get(link)
+                            if "locale=" in link:
+                                self.main.adjustLanguage(link.split("locale=")[1][:2])
                             self.main.driver.execute_script("window.scrollTo(0, 300)")
                             time.sleep(1)
                             lst = self.main.driver.find_elements(By.XPATH, "//div[@class='xsgj6o6 xw3qccf x1xmf6yo x1w6jkce xusnbm3']")
@@ -569,10 +575,18 @@ class Tag_thanh_vien(QRunnable):
             self.main.tag_status_updated.emit("Thiếu thông tin: Tag thành viên")
             return
         driver.get(self.ui.linkPost.text())
+        if "locale=" in self.ui.linkPost.text():
+            self.main.adjustLanguage(self.ui.linkPost.text().split("locale=")[1][:2])
         if any(message in driver.page_source for message in self.main.error_messages):
             self.main.tag_status_updated.emit("Không thể thao tác với bài đăng!")
             return
+        try:
+            textbox = driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
+        except:
+            self.main.tag_status_updated.emit("Không thể thao tác với bài đăng!")
+            return
         self.main.tag_status_updated.emit("Đang tag thành viên...")
+        
         actions = ActionChains(driver)
         delay = 1
         if self.ui.delayCheckbox.isChecked():
@@ -713,21 +727,26 @@ class Tag_thanh_vien(QRunnable):
         count = 0
         while 1:
             count += 1
-            if count == 10:
+            if count == 5:
                 self.main.tag_status_updated.emit("Xảy ra lỗi")
                 break
             try:
                 driver.get(f"https://www.facebook.com/groups/{group_id}/members")
+                self.main.adjustLanguage()
                 if any(message in driver.page_source for message in self.main.error_messages):
                     self.main.tag_status_updated.emit("Không thể truy cập nhóm!")
                     return
-                self.main.tag_status_updated.emit("Đang lấy danh sách tên thành viên...")
-                self.scroll_to_bottom(driver)
-                list_member = driver.find_elements(By.XPATH,'//div[@class="html-div x11i5rnm x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1oo3vh0 x1rdy4ex"]')[-1].find_elements(By.XPATH, "./*")
+                try:
+                    self.main.tag_status_updated.emit("Đang lấy danh sách tên thành viên...")
+                    self.scroll_to_bottom(driver)
+                    list_member = driver.find_elements(By.XPATH,'//div[@class="html-div x11i5rnm x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1oo3vh0 x1rdy4ex"]')[-1].find_elements(By.XPATH, "./*")
+                except:
+                    self.main.tag_status_updated.emit("Không thể truy cập nhóm!")
+                    return
                 list_name_str = ""
                 member_count = 0
                 for member in list_member:
-                    name_member = member.find_element(By.XPATH,"div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/span[1]/span[1]/span[1]/a[1]").text.strip()
+                    name_member = member.find_element(By.XPATH, "div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/span[1]/span[1]").text.strip()
                     list_name_str += f"{name_member}, "
                     member_count += 1
                 list_name_str = list_name_str.rstrip(", ")
