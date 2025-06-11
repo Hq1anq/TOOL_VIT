@@ -45,6 +45,7 @@ HẠN ĐĂNG KÝ: ...'''
         self.language = "vi"
         self.login_str = "Log in"
         self.message_str = "Nhắn tin"
+        self.comment_as_str = "Bình luận dưới tên"
         self.close_chat_str = "Đóng đoạn chat"
         self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị", "Trang n\u00e0y kh\u00f4ng hi\u1ec3n th\u1ecb", "B\u1ea1n hi\u1ec7n kh\u00f4ng xem \u0111\u01b0\u1ee3c n\u1ed9i dung n\u00e0y"]
 
@@ -292,6 +293,7 @@ HẠN ĐĂNG KÝ: ...'''
             options.add_experimental_option("excludeSwitches", ['enable-automation'])
             currentDirectory = os.getcwd()
             profilePath = os.path.join(currentDirectory, "ChromeData")
+            # profilePath = "D:\\demo\\ToolHanhChinh\\ChromeData"
             options.add_argument("user-data-dir=" + profilePath) # Chỉ định profile cho browser
             options.add_argument("--disable-notifications")
             options.add_argument("--window-size=1130,500")
@@ -316,12 +318,14 @@ HẠN ĐĂNG KÝ: ...'''
         else: self.language = force
         if self.language != "en":
             self.message_str = "Nhắn tin"
+            self.comment_as_str = "Bình luận dưới tên"
             self.close_chat_str = "Đóng đoạn chat"
             self.friend_str = "Bạn bè"
             self.login_str = "Đăng nhập"
             self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị", "Trang n\u00e0y kh\u00f4ng hi\u1ec3n th\u1ecb", "B\u1ea1n hi\u1ec7n kh\u00f4ng xem \u0111\u01b0\u1ee3c n\u1ed9i dung n\u00e0y"]
         else:
             self.message_str = "Message"
+            self.comment_as_str = "Comment as"
             self.close_chat_str = "Close chat"
             self.friend_str = "Friends"
             self.login_str = "Log in"
@@ -416,7 +420,7 @@ class Gui_hoat_dong(QRunnable):
                         self.main.adjustLanguage(link.split("locale=")[1][:2])
                     self.main.driver.execute_script("window.scrollTo(0, 300)")
                     time.sleep(1)
-                    lst = self.main.driver.find_elements(By.XPATH, "//div[@class='xsgj6o6 xw3qccf x1xmf6yo x1w6jkce xusnbm3']")
+                    lst = self.main.driver.find_elements(By.XPATH, "//div[@class='xdwrcjd x2fvf9 x1xmf6yo x1w6jkce xusnbm3']")
                     isFriend = False
                     if lst[0].text == self.main.friend_str:
                         isFriend = True
@@ -440,7 +444,7 @@ class Gui_hoat_dong(QRunnable):
                                 self.main.adjustLanguage(link.split("locale=")[1][:2])
                             self.main.driver.execute_script("window.scrollTo(0, 300)")
                             time.sleep(1)
-                            lst = self.main.driver.find_elements(By.XPATH, "//div[@class='xsgj6o6 xw3qccf x1xmf6yo x1w6jkce xusnbm3']")
+                            lst = self.main.driver.find_elements(By.XPATH, "//div[@class='xdwrcjd x2fvf9 x1xmf6yo x1w6jkce xusnbm3']")
                         if count == 10:
                             status = f"❌ {name}\n{status}"
                             self.main.error_link = f"{link}\n{self.main.error_link}"
@@ -581,7 +585,8 @@ class Tag_thanh_vien(QRunnable):
             self.main.tag_status_updated.emit("Không thể thao tác với bài đăng!")
             return
         try:
-            textbox = driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
+            textbox = driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.main.comment_as_str}')]]")
+            # textbox = driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
         except:
             self.main.tag_status_updated.emit("Không thể thao tác với bài đăng!")
             return
@@ -605,7 +610,8 @@ class Tag_thanh_vien(QRunnable):
                                 error_name += name + " "
                                 break
                             try:
-                                textbox = driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
+                                textbox = driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.main.comment_as_str}')]]")
+                                # textbox = driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
                                 is_active = driver.execute_script("return document.activeElement === arguments[0];", textbox)
                                 if is_active == False:
                                     textbox.click()
@@ -632,7 +638,8 @@ class Tag_thanh_vien(QRunnable):
                     self.main.tag_status_updated.emit("Xảy ra lỗi")
                     return
                 try:
-                    textbox = driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
+                    textbox = driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.main.comment_as_str}')]]")
+                    # textbox = driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
                     is_active = driver.execute_script("return document.activeElement === arguments[0];", textbox)
                     if is_active == False:
                         textbox.click()
@@ -656,7 +663,8 @@ class Tag_thanh_vien(QRunnable):
                                 error_name += name + " "
                                 break
                             try:
-                                textbox = driver.find_element(By.XPATH,'//div[@class="xzsf02u x1a2a7pz x1n2onr6 x14wi4xw notranslate"]')
+                                textbox = driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.main.comment_as_str}')]]")
+                                # textbox = driver.find_element(By.XPATH,'//div[@class="xzsf02u x1a2a7pz x1n2onr6 x14wi4xw notranslate"]')
                                 is_active = driver.execute_script("return document.activeElement === arguments[0];", textbox)
                                 if is_active == False:
                                     textbox.click()
@@ -683,7 +691,8 @@ class Tag_thanh_vien(QRunnable):
                     self.main.tag_status_updated.emit("Xảy ra lỗi")
                     return
                 try:
-                    textbox = driver.find_element(By.XPATH,'//div[@class="xzsf02u x1a2a7pz x1n2onr6 x14wi4xw notranslate"]')
+                    textbox = driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.main.comment_as_str}')]]")
+                    # textbox = driver.find_element(By.XPATH,'//div[@class="xzsf02u x1a2a7pz x1n2onr6 x14wi4xw notranslate"]')
                     is_active = driver.execute_script("return document.activeElement === arguments[0];", textbox)
                     if is_active == False:
                         textbox.click()
