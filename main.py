@@ -3,6 +3,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from PySide6.QtWidgets import QMainWindow, QApplication, QSizeGrip
 from PySide6.QtCore import QPoint, Qt, QEvent, QRunnable, Slot, QThreadPool, QTimer, Signal
 from PySide6.QtGui import QShortcut, QKeySequence, QMouseEvent
@@ -305,7 +307,6 @@ HẠN ĐĂNG KÝ: ...'''
                 elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
                     self.tag_status_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
                 return
-            self.driver.implicitly_wait(10)
             self.driver.set_window_position(0, 0)
             self.driver.set_window_size(1130, 500)
         self.driver.get("https://www.facebook.com")
@@ -410,6 +411,7 @@ class Gui_hoat_dong(QRunnable):
         self.main.error_link = ""
         success_count = 0
         error_count = 0
+        wait = WebDriverWait(self.main.driver, 15)
         for link in self.list_link:
             if len(link.strip()) > 8:
                 if link[0] == "f":
@@ -419,8 +421,10 @@ class Gui_hoat_dong(QRunnable):
                     if "locale=" in link:
                         self.main.adjustLanguage(link.split("locale=")[1][:2])
                     self.main.driver.execute_script("window.scrollTo(0, 300)")
-                    time.sleep(1)
-                    lst = self.main.driver.find_elements(By.XPATH, "//div[@class='xdwrcjd x2fvf9 x1xmf6yo x1w6jkce xusnbm3']")
+                    self.handle_chat_close(self.main.driver)
+                    lst = wait.until(EC.presence_of_all_elements_located(
+                        (By.XPATH, "//div[@class='xdwrcjd x2fvf9 x1xmf6yo x1w6jkce xusnbm3']")
+                    ))
                     isFriend = False
                     if lst[0].text == self.main.friend_str:
                         isFriend = True
@@ -435,72 +439,113 @@ class Gui_hoat_dong(QRunnable):
                     error_count += 1
                     continue
                 try:
-                    count = 0
-                    while 1:
-                        count += 1
-                        if count == 5:
-                            self.main.driver.get(link)
-                            if "locale=" in link:
-                                self.main.adjustLanguage(link.split("locale=")[1][:2])
-                            self.main.driver.execute_script("window.scrollTo(0, 300)")
-                            time.sleep(1)
-                            lst = self.main.driver.find_elements(By.XPATH, "//div[@class='xdwrcjd x2fvf9 x1xmf6yo x1w6jkce xusnbm3']")
-                        if count == 10:
-                            status = f"❌ {name}\n{status}"
-                            self.main.error_link = f"{link}\n{self.main.error_link}"
-                            error_count += 1
-                            break
+                    for attempt in range(1, 6):
                         try:
-                            if lst[1].text != self.main.message_str:
-                                status = name + " - Chưa kết bạn, không thể inbox\n" + status
+                            # Make sure correct element is found
+                            if len(lst) < 2 or lst[1].text != self.main.message_str:
+                                status = f"{name} - Chưa kết bạn, không thể inbox\n" + status
                                 break
-                            NhanTin = self.main.driver.find_element(By.XPATH, f"//div[@aria-label='{self.main.message_str}']")
+                            
+                            # Click the 'Nhắn tin' button
+                            NhanTin = wait.until(EC.element_to_be_clickable(
+                                (By.XPATH, f"//div[@aria-label='{self.main.message_str}']")
+                            ))
                             NhanTin.click()
-                            time.sleep(1)
-                            containerChat = self.main.driver.find_elements(By.CSS_SELECTOR, "html > body > div:nth-of-type(1) > div > div > div:nth-of-type(1) > div > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > *")
-                            if len(containerChat) >= 2:
-                                for close in self.main.driver.find_elements(By.XPATH, f"//div[@aria-label='{self.main.close_chat_str}']"):
-                                    actions.click(close).perform()
-                                    time.sleep(0.5)
-                                NhanTin = self.main.driver.find_element(By.XPATH, f"//div[@aria-label='{self.main.message_str}']")
-                                NhanTin.click()
-                                time.sleep(1)
-                                containerChat = self.main.driver.find_elements(By.CSS_SELECTOR, "html > body > div:nth-of-type(1) > div > div > div:nth-of-type(1) > div > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > *")
-                                if len(containerChat) >= 2:
-                                    for close in self.main.driver.find_elements(By.XPATH, f"//div[@aria-label='{self.main.close_chat_str}']"):
-                                        actions.click(close).perform()
-                                        time.sleep(0.5)
-                                    NhanTin = self.main.driver.find_element(By.XPATH, f"//div[@aria-label='{self.main.message_str}']")
-                                    NhanTin.click()
-                                    time.sleep(1)
-                            time.sleep(1)
-                            textbox = self.main.driver.find_element(By.XPATH, "//div[@aria-placeholder='Aa']")
-                            textbox_username = textbox.find_element(By.XPATH, "../../../../../../../../../../../div[1]/div[1]/div[1]/div[1]/div[1]").text
-                            if (name in textbox_username):
-                                pyperclip.copy(self.message)
+                            
+                            # Wait until chat container appears
+                            wait.until(lambda driver: len(driver.find_elements(By.CSS_SELECTOR,
+                                "html > body > div:nth-of-type(1) > div > div > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > *")) >= 1)
+                            
+                            chat_divs = self.main.driver.find_elements(
+                                By.CSS_SELECTOR,
+                                "html > body > div:nth-of-type(1) > div > div > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > *"
+                            )
+                            
+                            target_chat = None
+                            
+                            for div in chat_divs:
+                                try:
+                                    # username_div = div.find_element(By.XPATH,
+                                    #     "./div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]//h2"
+                                    # )
+                                    
+                                    # WebDriverWait(self.main.driver, 20).until(
+                                    #     lambda _: username_div.text.strip() != ""
+                                    # )
+                                    
+                                    # Wait until the text of the div is not empty
+                                    username_div = WebDriverWait(self.main.driver, 20).until(
+                                        lambda _: (
+                                            (hl := div.find_element(By.XPATH, "./div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]//h2")).text.strip() != "" and hl
+                                        )
+                                    )
+
+                                    username = username_div.text.strip()
+                                    print(username)
+                                    if name in username:
+                                        target_chat = div
+                                        break
+                                except Exception as e:
+                                    print("Error finding chat:", e)
+                                    continue
+                                
+                            if not target_chat:
+                                self.handle_chat_close(self.main.driver)
+                                raise Exception("Chat not found")
+
+                            textbox = WebDriverWait(target_chat, 10).until(
+                                EC.element_to_be_clickable((By.XPATH, "//div[@aria-placeholder='Aa']"))
+                            )
+                            actions.click(textbox).perform()
+                            
+                            # Wait until it becomes the active element (cursor is inside)
+                            try:
+                                WebDriverWait(self.main.driver, 5).until(
+                                    lambda d: d.execute_script("return document.activeElement === arguments[0];", textbox)
+                                )
+                            except:
+                                # Retry click once more if needed
                                 actions.click(textbox).perform()
-                                time.sleep(1)
-                                is_active = self.main.driver.execute_script("return document.activeElement === arguments[0];", textbox)
-                                if not is_active:
-                                    actions.click(textbox).perform()
-                                    time.sleep(1)
-                                actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
-                            else:
-                                raise Exception
+                                WebDriverWait(self.main.driver, 3).until(
+                                    lambda d: d.execute_script("return document.activeElement === arguments[0];", textbox)
+                                )
+                            
+                            pyperclip.copy(self.message)
+                            actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
+                            
+                            WebDriverWait(self.main.driver, 3).until(lambda d: textbox.text != "")  # Optional: Wait for paste effect
                             actions.send_keys(Keys.ENTER).perform()
-                            time.sleep(1)
+                            
                             close_chat = self.main.driver.find_element(By.XPATH, f"//div[@aria-label='{self.main.close_chat_str}']")
                             actions.click(close_chat).perform()
                             if isFriend:
                                 status = f"✔️ {name}\n{status}"
                             else:
-                                status = f"✔️ {name}, chưa kết bạn\n{status}"
+                                status = f"✔️ {name}, chưa kết bạn\n{status}"   
+                                
+                            if attempt == 3:
+                                self.main.driver.get(link)
+                                if "locale=" in link:
+                                    self.main.adjustLanguage(link.split("locale=")[1][:2])
+                                self.main.driver.execute_script("window.scrollTo(0, 300)")
+                            
                             success_count += 1
                             break
-                        except:
+                        
+                        except Exception as e:
+                            print("Error during message sending:", e)
                             if self.main.driver.get_window_size()["width"] <= 912:
                                 self.main.driver.set_window_size(1130, 500)
                             self.handle_chat_close(self.main.driver)
+                            lst = wait.until(EC.presence_of_all_elements_located(
+                                (By.XPATH, "//div[@class='xdwrcjd x2fvf9 x1xmf6yo x1w6jkce xusnbm3']")
+                            ))
+
+                            if attempt == 5:
+                                status = f"❌ {name}\n{status}"
+                                self.main.error_link = f"{link}\n{self.main.error_link}"
+                                error_count += 1
+                                break
                 except:
                     status = f"❌ {name}\n{status}"
                     self.main.error_link = f"{link}\n{self.main.error_link}"
