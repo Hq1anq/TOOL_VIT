@@ -11,8 +11,9 @@ from PySide6.QtGui import QShortcut, QKeySequence, QMouseEvent
 import time, sys, os
 import pyperclip
 import pandas as pd
-from ui_interface import Ui_MainWindow
-from custom_grips import CustomGrip
+
+from gui.ui_interface import Ui_MainWindow
+from gui.custom_grips import CustomGrip
 
 class MainWindow(QMainWindow):
     log_updated = Signal(str)
@@ -323,7 +324,7 @@ HẠN ĐĂNG KÝ: ...'''
             self.close_chat_str = "Đóng đoạn chat"
             self.friend_str = "Bạn bè"
             self.login_str = "Đăng nhập"
-            self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị", "Trang n\u00e0y kh\u00f4ng hi\u1ec3n th\u1ecb", "B\u1ea1n hi\u1ec7n kh\u00f4ng xem \u0111\u01b0\u1ee3c n\u1ed9i dung n\u00e0y"]
+            self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị", "Trang n\u00e0y kh\u00f4ng hi\u1ec3n th\u1ecb"]
         else:
             self.message_str = "Message"
             self.comment_as_str = "Comment as"
@@ -418,6 +419,10 @@ class Gui_hoat_dong(QRunnable):
                     link = "https://web." + link
                 try:
                     self.main.driver.get(link)
+                    for idx, message in enumerate(self.main.error_messages):
+                        if message in self.main.driver.page_source:
+                            print(f"Error message found at index {idx}: {message}")
+                            raise Exception(f"Error link: {message}")
                     if "locale=" in link:
                         self.main.adjustLanguage(link.split("locale=")[1][:2])
                     self.main.driver.execute_script("window.scrollTo(0, 300)")

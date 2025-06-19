@@ -13,7 +13,7 @@ from PySide6.QtGui import QCursor, QFont, QIcon
 from PySide6.QtWidgets import (QCheckBox, QComboBox, QFrame, QGridLayout, QHBoxLayout,
                                QLabel, QLineEdit, QPlainTextEdit, QPushButton, QSizePolicy,
                                QStackedWidget, QVBoxLayout, QWidget)
-import resources_rc
+import gui.resources_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
