@@ -546,6 +546,7 @@ class Tag_thanh_vien(QRunnable):
     def tag(self):
         self.list_name = list(map(str.strip, self.ui.listName.toPlainText().split(",")))
         self.comment = self.ui.comment.toPlainText()
+        self.list_name.append(self.comment)
         if len(self.list_name) == 0:
             self.main.tag_status_updated.emit("Thiếu thông tin: Tag thành viên")
             return
@@ -564,8 +565,12 @@ class Tag_thanh_vien(QRunnable):
                 delay = float(self.ui.delay.text())
             except: delay = 1
         error_name = ""
-        
-        for name in self.list_name:
+        if self.check_open_post():
+            print(1)
+            suggestion_css = "div.x78zum5.xdt5ytf.xg6iff7.xippug5.x1n2onr6 > div:nth-of-type(3) > div"
+        else:
+            suggestion_css = "div.x78zum5.xdt5ytf.x1n2onr6.xat3117.xxzkxad > div:nth-of-type(2) > div"
+        for i, name in enumerate(self.list_name):
             if len(name) > 2:
                 for attemp in range(1, 6):
                     try:
@@ -574,20 +579,26 @@ class Tag_thanh_vien(QRunnable):
                         )
                         is_active = self.driver.execute_script("return document.activeElement === arguments[0];", textbox)
                         if is_active == False:
-                            textbox.click()
+                            actions.click(textbox).perform()
                             actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
                             time.sleep(0.5)
+                        if i == len(self.list_name) - 1:
+                            pyperclip.copy(self.comment)
+                            actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
+                            break
                         textbox.send_keys("@", name)
                         if self.ui.delayCheckbox.isChecked():
                             time.sleep(3 if attemp == 1 else delay)
                         else:
-                            suggestion_css = "div.x78zum5.xdt5ytf.x1n2onr6.xat3117.xxzkxad > div:nth-of-type(2) > div"
                             self.driver_manager.wait10.until(
                                 lambda driver: len(driver.find_element(By.CSS_SELECTOR, suggestion_css).find_elements(By.XPATH, "./*")) >= 1
                             )
                         textbox.send_keys(Keys.TAB)
                         time.sleep(0.5)
                         textbox.send_keys(" ")
+                        
+                        if attemp == 3:
+                            self.driver.refresh()
                         break
                     except:
                         if self.driver.get_window_size()["width"] <= 912:
@@ -596,25 +607,6 @@ class Tag_thanh_vien(QRunnable):
                         if attemp == 5:
                             error_name += name + " "
                             break
-        cnt = 0
-        while 1:
-            cnt += 1
-            if cnt == 10:
-                self.main.tag_status_updated.emit("Xảy ra lỗi")
-                return
-            try:
-                textbox = self.driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.driver_manager.comment_as_str}')]]")
-                # textbox = self.driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
-                is_active = self.driver.execute_script("return document.activeElement === arguments[0];", textbox)
-                if is_active == False:
-                    textbox.click()
-                    actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
-                    time.sleep(0.5)
-                pyperclip.copy(self.comment)
-                actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
-                break
-            except:
-                self.driver_manager.handle_chat_close()
         self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
         if self.main.autoSave: self.main.save_data()
     def get_member_name(self):
