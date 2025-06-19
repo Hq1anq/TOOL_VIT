@@ -387,10 +387,8 @@ class Gui_hoat_dong(QRunnable):
                     link = "https://web." + link
                 try:
                     self.driver.get(link)
-                    for idx, message in enumerate(self.main.error_messages):
-                        if message in self.driver.page_source:
-                            print(f"Error message found at index {idx}: {message}")
-                            raise Exception(f"Error link: {message}")
+                    if any(message in self.driver.page_source for message in self.main.error_messages):
+                        raise Exception(f"Error user link")
                     if "locale=" in link:
                         self.driver_manager.adjust_language(link.split("locale=")[1][:2])
                     self.driver.execute_script("window.scrollTo(0, 300)")
@@ -540,27 +538,21 @@ class Tag_thanh_vien(QRunnable):
         self.cookies = ""
         self.list_name = []
         self.comment = ""
-    def check_open_post(self, driver: webdriver.Chrome):
-        div = driver.find_element(By.XPATH, "//div[@role='banner']/following-sibling::div[1]")
+    def check_open_post(self):
+        div = self.driver.find_element(By.XPATH, "//div[@role='banner']/following-sibling::div[1]")
         if div.get_attribute("class") == "x9f619 x1n2onr6 x1ja2u2z":
             return False
         else: return True
     def tag(self):
         self.list_name = list(map(str.strip, self.ui.listName.toPlainText().split(",")))
         self.comment = self.ui.comment.toPlainText()
-        if self.comment == "" or len(self.list_name) == 0:
+        if len(self.list_name) == 0:
             self.main.tag_status_updated.emit("Thiếu thông tin: Tag thành viên")
             return
         self.driver.get(self.ui.linkPost.text())
         if "locale=" in self.ui.linkPost.text():
             self.driver_manager.adjust_language(self.ui.linkPost.text().split("locale=")[1][:2])
         if any(message in self.driver.page_source for message in self.main.error_messages):
-            self.main.tag_status_updated.emit("Không thể thao tác với bài đăng!")
-            return
-        try:
-            textbox = self.driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.driver_manager.comment_as_str}')]]")
-            # textbox = self.driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
-        except:
             self.main.tag_status_updated.emit("Không thể thao tác với bài đăng!")
             return
         self.main.tag_status_updated.emit("Đang tag thành viên...")
@@ -572,116 +564,60 @@ class Tag_thanh_vien(QRunnable):
                 delay = float(self.ui.delay.text())
             except: delay = 1
         error_name = ""
-        if self.check_open_post(self.driver):
-            for name in self.list_name:
-                if len(name) > 2:
+        
+        for name in self.list_name:
+            if len(name) > 2:
+                for attemp in range(1, 6):
                     try:
-                        count = 0
-                        while 1:
-                            count += 1
-                            if count == 10:
-                                error_name += name + " "
-                                break
-                            try:
-                                textbox = self.driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.driver_manager.comment_as_str}')]]")
-                                # textbox = self.driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
-                                is_active = self.driver.execute_script("return document.activeElement === arguments[0];", textbox)
-                                if is_active == False:
-                                    textbox.click()
-                                    actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
-                                    time.sleep(0.5)
-                                textbox.send_keys("@", name)
-                                if name == self.list_name[0]:
-                                    time.sleep(3)
-                                else: time.sleep(delay)
-                                textbox.send_keys(Keys.TAB)
-                                time.sleep(0.5)
-                                textbox.send_keys(" ")
-                                break
-                            except:
-                                if self.driver.get_window_size()["width"] <= 912:
-                                    self.driver.set_window_size(1130, 500)
-                                self.driver_manager.handle_chat_close()
-                    except:
-                        self.main.tag_status_updated.emit("Xảy ra lỗi")
-            cnt = 0
-            while 1:
-                cnt += 1
-                if cnt == 10:
-                    self.main.tag_status_updated.emit("Xảy ra lỗi")
-                    return
-                try:
-                    textbox = self.driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.driver_manager.comment_as_str}')]]")
-                    # textbox = self.driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
-                    is_active = self.driver.execute_script("return document.activeElement === arguments[0];", textbox)
-                    if is_active == False:
-                        textbox.click()
-                        actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
+                        textbox = self.driver_manager.wait10.until(
+                            EC.element_to_be_clickable((By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.driver_manager.comment_as_str}')]]"))
+                        )
+                        is_active = self.driver.execute_script("return document.activeElement === arguments[0];", textbox)
+                        if is_active == False:
+                            textbox.click()
+                            actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
+                            time.sleep(0.5)
+                        textbox.send_keys("@", name)
+                        if self.ui.delayCheckbox.isChecked():
+                            time.sleep(3 if attemp == 1 else delay)
+                        else:
+                            suggestion_css = "div.x78zum5.xdt5ytf.x1n2onr6.xat3117.xxzkxad > div:nth-of-type(2) > div"
+                            self.driver_manager.wait10.until(
+                                lambda driver: len(driver.find_element(By.CSS_SELECTOR, suggestion_css).find_elements(By.XPATH, "./*")) >= 1
+                            )
+                        textbox.send_keys(Keys.TAB)
                         time.sleep(0.5)
-                    pyperclip.copy(self.comment)
-                    actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
-                    break
-                except:
-                    self.driver_manager.handle_chat_close()
-            self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
-            if self.main.autoSave: self.main.save_data()
-        else:
-            for name in self.list_name:
-                if len(name) > 2:
-                    try:
-                        count = 0
-                        while 1:
-                            count += 1
-                            if count == 10:
-                                error_name += name + " "
-                                break
-                            try:
-                                textbox = self.driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.driver_manager.comment_as_str}')]]")
-                                # textbox = self.driver.find_element(By.XPATH,'//div[@class="xzsf02u x1a2a7pz x1n2onr6 x14wi4xw notranslate"]')
-                                is_active = self.driver.execute_script("return document.activeElement === arguments[0];", textbox)
-                                if is_active == False:
-                                    textbox.click()
-                                    actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
-                                    time.sleep(0.5)
-                                textbox.send_keys("@", name)
-                                if name == self.list_name[0]:
-                                    time.sleep(3)
-                                else: time.sleep(delay)
-                                textbox.send_keys(Keys.TAB)
-                                time.sleep(0.5)
-                                textbox.send_keys(" ")
-                                break
-                            except:
-                                if self.driver.get_window_size()["width"] <= 912:
-                                    self.driver.set_window_size(1130, 500)
-                                self.driver_manager.handle_chat_close()
+                        textbox.send_keys(" ")
+                        break
                     except:
-                        self.main.tag_status_updated.emit("Xảy ra lỗi")
-            cnt = 0
-            while 1:
-                cnt += 1
-                if cnt == 10:
-                    self.main.tag_status_updated.emit("Xảy ra lỗi")
-                    return
-                try:
-                    textbox = self.driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.driver_manager.comment_as_str}')]]")
-                    # textbox = self.driver.find_element(By.XPATH,'//div[@class="xzsf02u x1a2a7pz x1n2onr6 x14wi4xw notranslate"]')
-                    is_active = self.driver.execute_script("return document.activeElement === arguments[0];", textbox)
-                    if is_active == False:
-                        textbox.click()
-                        actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
-                        time.sleep(0.5)
-                    pyperclip.copy(self.comment)
-                    actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
-                    break
-                except:
-                    self.driver_manager.handle_chat_close()
-            if len(error_name) > 2:
-                self.main.tag_status_updated.emit("Đã tag xong, tag lỗi: ", error_name)
-            else:
-                self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
-            if self.main.autoSave: self.main.save_data()
-    def get_member_name(self, driver: webdriver.Chrome):
+                        if self.driver.get_window_size()["width"] <= 912:
+                            self.driver.set_window_size(1130, 500)
+                        self.driver_manager.handle_chat_close()
+                        if attemp == 5:
+                            error_name += name + " "
+                            break
+        cnt = 0
+        while 1:
+            cnt += 1
+            if cnt == 10:
+                self.main.tag_status_updated.emit("Xảy ra lỗi")
+                return
+            try:
+                textbox = self.driver.find_element(By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.driver_manager.comment_as_str}')]]")
+                # textbox = self.driver.find_element(By.XPATH, "//div[@class='xwib8y2 xurb0ha x1y1aw1k']//div[@role='textbox']")
+                is_active = self.driver.execute_script("return document.activeElement === arguments[0];", textbox)
+                if is_active == False:
+                    textbox.click()
+                    actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
+                    time.sleep(0.5)
+                pyperclip.copy(self.comment)
+                actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
+                break
+            except:
+                self.driver_manager.handle_chat_close()
+        self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
+        if self.main.autoSave: self.main.save_data()
+    def get_member_name(self):
         try:
             group_id = self.ui.linkForName.text().split("groups/")[1].split("/")[0]
         except:
@@ -697,15 +633,15 @@ class Tag_thanh_vien(QRunnable):
                 self.main.tag_status_updated.emit("Xảy ra lỗi")
                 break
             try:
-                driver.get(f"https://www.facebook.com/groups/{group_id}/members")
+                self.driver.get(f"https://www.facebook.com/groups/{group_id}/members")
                 self.driver_manager.adjust_language()
-                if any(message in driver.page_source for message in self.main.error_messages):
+                if any(message in self.driver.page_source for message in self.main.error_messages):
                     self.main.tag_status_updated.emit("Không thể truy cập nhóm!")
                     return
                 try:
                     self.main.tag_status_updated.emit("Đang lấy danh sách tên thành viên...")
                     self.driver_manager.scroll_to_bottom()
-                    list_member = driver.find_elements(By.XPATH,'//div[@class="html-div x11i5rnm x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1oo3vh0 x1rdy4ex"]')[-1].find_elements(By.XPATH, "./*")
+                    list_member = self.driver.find_elements(By.XPATH,'//div[@class="html-div x11i5rnm x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1oo3vh0 x1rdy4ex"]')[-1].find_elements(By.XPATH, "./*")
                 except:
                     self.main.tag_status_updated.emit("Không thể truy cập nhóm!")
                     return
@@ -731,6 +667,7 @@ class Tag_thanh_vien(QRunnable):
             elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
                 self.main.tag_status_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
             return
+        self.driver = self.driver_manager.driver
         self.driver_manager.jump_to_facebook()
         if not self.driver_manager.is_login:
             self.cookies = self.ui.cookieInput.text()
@@ -745,9 +682,9 @@ class Tag_thanh_vien(QRunnable):
                 self.main.log_updated.emit("Chưa đăng nhập, vui lòng điền cookie")
                 return
         if self.action == "tag":
-            self.tag(self.driver)
+            self.tag()
         elif self.action == "get_member_name":
-            self.get_member_name(self.driver)
+            self.get_member_name()
 
 def run_gui_hoat_dong(driver_manager: DriverManager, main: "MainWindow"):
     main.move(main.screen().size().width()- main.size().width(), main.screen().size().height() - main.size().height() - 50)
