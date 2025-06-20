@@ -1,5 +1,3 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
@@ -10,11 +8,11 @@ from PySide6.QtCore import QPoint, Qt, QEvent, QRunnable, Slot, QThreadPool, QTi
 from PySide6.QtGui import QShortcut, QKeySequence, QMouseEvent
 import time, sys, os
 import pyperclip
-import pandas as pd
 
 from gui.ui_interface import Ui_MainWindow
 from gui.custom_grips import CustomGrip
 from driver_manager import DriverManager
+from data_manager import DataManager
 
 class MainWindow(QMainWindow):
     log_updated = Signal(str)
@@ -42,15 +40,6 @@ HẠN ĐĂNG KÝ: ...'''
         self.default_name = ["Văn A", "Thị B", "Nguyễn C"]
         self.default_comment = "cf nào mọi người"
         self.file_path = "Data.xlsx"
-        self.autoSave = False
-        self.error_link = ""
-        
-        self.language = "vi"
-        self.login_str = "Log in"
-        self.message_str = "Nhắn tin"
-        self.comment_as_str = "Bình luận dưới tên"
-        self.close_chat_str = "Đóng đoạn chat"
-        self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị", "Trang n\u00e0y kh\u00f4ng hi\u1ec3n th\u1ecb", "B\u1ea1n hi\u1ec7n kh\u00f4ng xem \u0111\u01b0\u1ee3c n\u1ed9i dung n\u00e0y"]
 
         # Remove window tittle bar
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
@@ -91,17 +80,18 @@ HẠN ĐĂNG KÝ: ...'''
         # Restore/Maximize window
         self.ui.changeWindowBtn.clicked.connect(self.maximize_restore)
         
-        self.driver_manager = DriverManager()
+        self.data_manager = DataManager()
+        self.driver_manager = DriverManager(self.data_manager.chrome_path)
 
         self.ui.comboBox.activated.connect(self.chooseFunction)
         self.ui.fromGroupCheckbox.stateChanged.connect(self.changeUseOfGroup)
         self.ui.delayCheckbox.stateChanged.connect(lambda: self.ui.delay.hide() if self.ui.delay.isVisible() else self.ui.delay.show())
         self.ui.delayCheckbox.stateChanged.connect(lambda: self.ui.delayLabel.hide() if self.ui.delayLabel.isVisible() else self.ui.delayLabel.show())
         
-        self.ui.sendOK.clicked.connect(lambda: run_gui_hoat_dong(self.driver_manager, self))
-        self.ui.tagOK.clicked.connect(lambda: run_tag_thanh_vien(self.driver_manager, self, "tag"))
-        self.ui.getNameBtn.clicked.connect(lambda: run_tag_thanh_vien(self.driver_manager, self, "get_member_name"))
-        self.ui.autoSave.clicked.connect(self.set_autosave)
+        self.ui.sendOK.clicked.connect(self.run_guiHD)
+        self.ui.tagOK.clicked.connect(lambda: self.run_tag("tag"))
+        self.ui.getNameBtn.clicked.connect(lambda: self.run_tag("get_member_name"))
+        self.ui.autoSave.clicked.connect(self.data_manager.set_autosave)
         self.ui.copyLogBtn.clicked.connect(self.copy_error_link)
         self.ui.credits.clicked.connect(self.access_credit)
         
@@ -115,7 +105,7 @@ HẠN ĐĂNG KÝ: ...'''
         self.log_updated.connect(self.update_log)
         self.tag_status_updated.connect(self.update_tag_status)
         self.tag_name_updated.connect(self.update_tag_name)
-        
+
     def maximize_restore(self):
         if self.isMaximized():
             self.showNormal()
@@ -175,96 +165,21 @@ HẠN ĐĂNG KÝ: ...'''
         self.ui.tagStatus.setStyleSheet("color: white")
     def reset_name_color(self):
         self.ui.listName.setStyleSheet("color: white")
-    def create_df(self, content_data, fields):
-        # Tạo DataFrame từ content_data
-        content_df = pd.DataFrame(content_data)
-        
-        # Tìm chiều dài tối đa của các danh sách trong các cột
-        max_len = max(len(content_data[0][field]) if isinstance(content_data[0][field], list) else 1 for field in fields)
-        
-        # Mở rộng các danh sách để có cùng độ dài
-        for field in fields:
-            # content_df[field] = content_df[field].apply(lambda x: x + [None] * (max_len - len(x)))
-            # Đảm bảo mọi giá trị trong `field` là danh sách
-            if not isinstance(content_data[0][field], list):
-                content_data[0][field] = [content_data[0][field]]
-            # Mở rộng danh sách để có chiều dài tối đa
-            content_df[field] = [content_data[0][field] + [None] * (max_len - len(content_data[0][field]))]
-        
-        # Explode các cột để chuyển các mục trong danh sách thành các hàng riêng biệt
-        content_df = content_df.explode(fields).astype(str).replace("None", "")
-        return content_df
-    def DF2List(self, dataframe, col):
-        return [x.strip() for x in dataframe[col].tolist() if pd.notna(x) and x.strip() != ""]
+    
     def init_textbox(self):
-        if not os.path.exists(self.file_path):
-            cookies = self.default_cookies
-            list_link = self.default_list_link
-            message = self.default_message
-            guiHoatDong_data = [{
-                "COOKIES": cookies,
-                "LINK FACEBOOK": list_link,
-                "MESSAGE": message
-            }]
-            link_post = self.default_link_post
-            link_group = self.default_link_group
-            list_name = self.default_name
-            comment = self.default_comment
-            tag_data = [{
-                "LINK POST": link_post,
-                "LINK GROUP (FOR GET USER NAME)": link_group,
-                "NAME (FOR TAG)": list_name,
-                "COMMENT": comment
-            }]
-            guiHoatDong_DF = self.create_df(guiHoatDong_data, ["COOKIES", "LINK FACEBOOK", "MESSAGE"])
-            tag_DF = self.create_df(tag_data, ["LINK POST", "LINK GROUP (FOR GET USER NAME)", "NAME (FOR TAG)", "COMMENT"])
-            guiHoatDong_DF.to_excel(self.file_path, sheet_name="Gui hoat dong", index=False)
-            with pd.ExcelWriter(self.file_path, mode="a", if_sheet_exists="replace") as writer:
-                tag_DF.to_excel(writer, sheet_name="Tag thanh vien", index=False)
-        else:
-            try:
-                guiHoatDong_DF = pd.read_excel(self.file_path, sheet_name="Gui hoat dong")
-                cookies = guiHoatDong_DF.at[0, "COOKIES"] if pd.notna(guiHoatDong_DF.at[0, "COOKIES"]) else ""
-                list_link = self.DF2List(guiHoatDong_DF, "LINK FACEBOOK")
-                message = guiHoatDong_DF.at[0, "MESSAGE"] if pd.notna(guiHoatDong_DF.at[0, "MESSAGE"]) else ""
-            except:
-                cookies = self.default_cookies
-                list_link = self.default_list_link
-                message = self.default_message
-                guiHoatDong_data = [{
-                    "COOKIES": cookies,
-                    "LINK FACEBOOK": list_link,
-                    "MESSAGE": message
-                }]
-                guiHoatDong_DF = self.create_df(guiHoatDong_data, ["COOKIES", "LINK FACEBOOK", "MESSAGE"])
-                try:
-                    with pd.ExcelWriter(self.file_path, mode="a", if_sheet_exists="replace") as writer:
-                        guiHoatDong_DF.to_excel(writer, sheet_name="Gui hoat dong", index=False)
-                except:
-                    self.log_updated.emit("Không thể thao tác với file đang mở")
-            try:
-                tag_DF = pd.read_excel(self.file_path, sheet_name="Tag thanh vien")
-                link_post = tag_DF.at[0, "LINK POST"] if pd.notna(tag_DF.at[0, "LINK POST"]) else ""
-                link_group = tag_DF.at[0, "LINK GROUP (FOR GET USER NAME)"] if pd.notna(tag_DF.at[0, "LINK GROUP (FOR GET USER NAME)"]) else ""
-                list_name = self.DF2List(tag_DF, "NAME (FOR TAG)")
-                comment = tag_DF.at[0, "COMMENT"] if pd.notna(tag_DF.at[0, "COMMENT"]) else ""
-            except:
-                link_post = self.default_link_post
-                link_group = self.default_link_group
-                list_name = self.default_name
-                comment = self.default_comment
-                tag_data = [{
-                    "LINK POST": link_post,
-                    "LINK GROUP (FOR GET USER NAME)": link_group,
-                    "NAME (FOR TAG)": list_name,
-                    "COMMENT": comment
-                }]
-                tag_DF = self.create_df(tag_data, ["LINK POST", "LINK GROUP (FOR GET USER NAME)", "NAME (FOR TAG)", "COMMENT"])
-                try:
-                    with pd.ExcelWriter(self.file_path, mode="a", if_sheet_exists="replace") as writer:
-                        tag_DF.to_excel(writer, sheet_name="Tag thanh vien", index=False)
-                except:
-                    self.tag_status_updated.emit("Không thể thao tác với file đang mở")
+        self.data_manager.load_data()
+        data = self.data_manager.data
+        cookies = data["COOKIES"]
+        
+        # Gui hoat dong
+        list_link = data["GUI_HOAT_DONG"]["links"]
+        message = data["GUI_HOAT_DONG"]["message"]
+        
+        # Tag thanh vien
+        link_post = data["TAG_THANH_VIEN"]["link_post"]
+        link_group = data["TAG_THANH_VIEN"]["link_group"]
+        list_name = data["TAG_THANH_VIEN"]["members"]
+        comment = data["TAG_THANH_VIEN"]["comment"]
                 
         self.ui.cookieInput.setText(cookies)
         self.ui.listLink.setPlainText("\n".join(list_link))
@@ -290,71 +205,70 @@ HẠN ĐĂNG KÝ: ...'''
         self.ui.delay.hide()
         self.ui.delayLabel.hide()
         self.ui.logFrame.hide()
+        
     def copy_error_link(self):
-        pyperclip.copy(self.error_link)
-        self.log_updated.emit(f"Đã copy các link bị lỗi!\n{self.ui.sendLog.toPlainText()}")
-    def set_autosave(self):
-        self.autoSave = not self.autoSave
-    def is_file_open(self):
-        try:
-            file = open(self.file_path, "a")
-            file.close()
-            return False
-        except:
-            return True
+        pyperclip.copy(self.data_manager.error_link)
+        self.ui.sendLog.setPlainText(f"Đã copy các link bị lỗi!\n{self.ui.sendLog.toPlainText()}")
     def save_data(self):
-        if self.is_file_open():
+        self.data_manager.data["COOKIES"] = self.ui.cookieInput.text().strip()
+        
+        self.data_manager.data["GUI_HOAT_DONG"] = {
+            "links": list(map(str.strip, self.ui.listLink.toPlainText().split("\n"))),
+            "message": self.ui.message.toPlainText().strip()
+        }
+        
+        self.data_manager.data["TAG_THANH_VIEN"] = {
+            "link_post": self.ui.linkPost.text().strip(),
+            "link_group": self.ui.linkForName.text().strip(),
+            "members": list(map(str.strip, self.ui.listName.toPlainText().split(","))),
+            "comment": self.ui.comment.toPlainText().strip()
+        }
+        if self.data_manager.save_data():
             if self.ui.stackedWidget.currentWidget() == self.ui.send:
-                self.log_updated.emit(f"Không thể lưu dữ liệu vào file đang mở\n{self.ui.sendLog.toPlainText()}")
+                self.ui.sendLog.setPlainText(f"Đã lưu dữ liệu vào file {self.file_path}\n{self.ui.sendLog.toPlainText()}")
             elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
-                self.tag_status_updated.emit("Không thể lưu dữ liệu vào file đang mở")
+                self.ui.tagStatus.setText(f"Đã lưu dữ liệu vào file {self.file_path}")
+        else:
+            if self.ui.stackedWidget.currentWidget() == self.ui.send:
+                self.ui.sendLog.setPlainText(f"Không thể lưu dữ liệu vào file đang mở\n{self.ui.sendLog.toPlainText()}")
+            elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
+                self.ui.tagStatus.setText("Không thể lưu dữ liệu vào file đang mở")
             return
-        guiHoatDong_data = [{
-                "COOKIES": self.ui.cookieInput.text().strip(),
-                "LINK FACEBOOK": list(map(str.strip, self.ui.listLink.toPlainText().split("\n"))),
-                "MESSAGE": self.ui.message.toPlainText().strip()
-            }]
-        tag_data = [{
-                "LINK POST": self.ui.linkPost.text().strip(),
-                "LINK GROUP (FOR GET USER NAME)": self.ui.linkForName.text().strip(),
-                "NAME (FOR TAG)": list(map(str.strip, self.ui.listName.toPlainText().split(","))),
-                "COMMENT": self.ui.comment.toPlainText().strip()
-            }]
-        guiHoatDong_DF = self.create_df(guiHoatDong_data, ["COOKIES", "LINK FACEBOOK", "MESSAGE"])
-        tag_DF = self.create_df(tag_data, ["LINK POST", "LINK GROUP (FOR GET USER NAME)", "NAME (FOR TAG)", "COMMENT"])
-        with pd.ExcelWriter(self.file_path, mode="a", if_sheet_exists="replace") as writer:
-            guiHoatDong_DF.to_excel(writer, sheet_name="Gui hoat dong", index=False)
-            tag_DF.to_excel(writer, sheet_name="Tag thanh vien", index=False)
-        if self.ui.stackedWidget.currentWidget() == self.ui.send:
-            self.log_updated.emit(f"Đã lưu dữ liệu vào file {self.file_path}\n{self.ui.sendLog.toPlainText()}")
-        elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
-            self.tag_status_updated.emit(f"Đã lưu dữ liệu vào file {self.file_path}")
     def access_credit(self):
         if not self.driver_manager.setup_driver():
             if self.ui.stackedWidget.currentWidget() == self.ui.send:
-                self.log_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
+                self.ui.sendLog.setPlainText("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
             elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
-                self.tag_status_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
+                self.ui.tagStatus.setText("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
             return
         self.driver_manager.driver.execute_script('window.open("https://www.facebook.com/h0anq.qianq/")')
-        self.driver_manager.driver.switch_to.window(self.driver.window_handles[0])
+        self.driver_manager.driver.switch_to.window(self.driver_manager.driver.window_handles[0])
+    
+    def run_tag(self, action: str):
+        self.move(self.screen().size().width()- self.size().width(), self.screen().size().height() - self.size().height() - 50)
+        tag_thanh_vien = Tag_thanh_vien(self.driver_manager, self.ui, action, self.data_manager)
+        tag_thanh_vien.run()
+    
+    def run_guiHD(self):
+        self.move(self.screen().size().width()- self.size().width(), self.screen().size().height() - self.size().height() - 50)
+        self.ui.logFrame.show()
+        QApplication.processEvents()  # Let Qt update the GUI now
+        guiHD = Gui_hoat_dong(self.driver_manager, self.ui, self.data_manager)
+        guiHD.run()
         
-class Gui_hoat_dong(QRunnable):
-    def __init__(self, driver_manager: DriverManager, main: "MainWindow"):
+class Gui_hoat_dong:
+    def __init__(self, driver_manager: DriverManager, ui: Ui_MainWindow, data_manager: DataManager):
         super().__init__()
         self.driver_manager = driver_manager
-        self.main = main
-        self.ui = main.ui
-        self.cookies = ""
-        self.list_link = ""
-        self.message = ""
-    @Slot()
+        self.ui = ui
+        self.data_manager = data_manager
+        self.cookies = self.data_manager.data["COOKIES"]
+        self.list_link = self.data_manager.data["GUI_HOAT_DONG"]["links"]
+        self.message = self.data_manager.data["GUI_HOAT_DONG"]["message"]
+        
     def run(self):
         if not self.driver_manager.setup_driver():
-            if self.ui.stackedWidget.currentWidget() == self.ui.send:
-                self.main.log_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
-            elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
-                self.main.tag_status_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
+            self.ui.sendLog.setPlainText("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
             return
         self.driver = self.driver_manager.driver
         self.driver_manager.jump_to_facebook()
@@ -365,20 +279,20 @@ class Gui_hoat_dong(QRunnable):
                 self.driver.refresh()
                 self.driver_manager.wait_for_element(By.ID, "facebook")
                 if not self.driver_manager.check_login():
-                    self.main.log_updated.emit("Chưa đăng nhập, sai cookie")
+                    self.ui.sendLog.setPlainText("Chưa đăng nhập, sai cookie")
                     return
             else:
-                self.main.log_updated.emit("Chưa đăng nhập, vui lòng điền cookie")
+                self.ui.sendLog.setPlainText("Chưa đăng nhập, vui lòng điền cookie")
                 return
-        self.main.log_updated.emit("Đang gửi hoạt động...")
+        self.ui.sendLog.setPlainText("Đang gửi hoạt động...")
         status = ""
         self.message = self.ui.message.toPlainText().strip()
         actions = ActionChains(self.driver)
         self.list_link = [x.strip() for x in self.ui.listLink.toPlainText().split("\n") if x.strip()]
         if not bool(self.list_link) or self.message == "":
-            self.main.log_updated.emit("Thiếu thông tin: Hoạt động")
+            self.ui.sendLog.setPlainText("Thiếu thông tin: Hoạt động")
             return
-        self.main.error_link = ""
+        self.data_manager.error_link = ""
         success_count = 0
         error_count = 0
         for link in self.list_link:
@@ -387,7 +301,7 @@ class Gui_hoat_dong(QRunnable):
                     link = "https://web." + link
                 try:
                     self.driver.get(link)
-                    if any(message in self.driver.page_source for message in self.main.error_messages):
+                    if any(message in self.driver.page_source for message in self.driver_manager.error_messages):
                         raise Exception(f"Error user link")
                     if "locale=" in link:
                         self.driver_manager.adjust_language(link.split("locale=")[1][:2])
@@ -405,157 +319,139 @@ class Gui_hoat_dong(QRunnable):
                     name = self.driver.execute_script(get_name_script, self.driver.find_element(By.XPATH, "//div[@class='x1e56ztr x1xmf6yo']/span/h1"))
                 except:
                     status = f"❌ {link}\n{status}"
-                    self.main.error_link = f"{link}\n{self.main.error_link}"
-                    self.main.log_updated.emit(status)
+                    self.data_manager.error_link = f"{link}\n{self.data_manager.error_link}"
+                    self.ui.sendLog.setPlainText(status)
                     error_count += 1
                     continue
-                try:
-                    for attempt in range(1, 6):
-                        try:
-                            # Make sure correct element is found
-                            if len(lst) < 2 or lst[1].text != self.driver_manager.message_str:
-                                status = f"{name} - Chưa kết bạn, không thể inbox\n" + status
-                                break
-                            
-                            # Click the 'Nhắn tin' button
-                            NhanTin = self.driver_manager.wait15.until(EC.element_to_be_clickable(
-                                (By.XPATH, f"//div[@aria-label='{self.driver_manager.message_str}']")
-                            ))
-                            NhanTin.click()
-                            
-                            # Wait until chat container appears
-                            self.driver_manager.wait15.until(lambda driver: len(driver.find_elements(By.CSS_SELECTOR,
-                                "html > body > div:nth-of-type(1) > div > div > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > *")) >= 1)
-                            
-                            chat_divs = self.driver.find_elements(
-                                By.CSS_SELECTOR,
-                                "html > body > div:nth-of-type(1) > div > div > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > *"
-                            )
-                            
-                            target_chat = None
-                            
-                            for div in chat_divs:
-                                try:
-                                    # Wait until the text of the div is not empty
-                                    username_div = self.driver_manager.wait20.until(
-                                        lambda _: (
-                                            (hl := div.find_element(By.XPATH, "./div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]//h2")).text.strip() != "" and hl
-                                        )
-                                    )
-
-                                    username = username_div.text.strip()
-                                    print(username)
-                                    if name in username:
-                                        target_chat = div
-                                        break
-                                except Exception as e:
-                                    print("Error finding chat:", e)
-                                    continue
-                                
-                            if not target_chat:
-                                self.driver_manager.handle_chat_close()
-                                raise Exception("Chat not found")
-
-                            textbox = WebDriverWait(target_chat, 10).until(
-                                EC.element_to_be_clickable((By.XPATH, "//div[@aria-placeholder='Aa']"))
-                            )
-                            actions.click(textbox).perform()
-                            
-                            # Wait until it becomes the active element (cursor is inside)
-                            try:
-                                self.driver_manager.wait5.until(
-                                    lambda d: d.execute_script("return document.activeElement === arguments[0];", textbox)
-                                )
-                            except:
-                                # Retry click once more if needed
-                                actions.click(textbox).perform()
-                                self.driver_manager.wait5.until(
-                                    lambda d: d.execute_script("return document.activeElement === arguments[0];", textbox)
-                                )
-                            
-                            scroll_selector = "div.x78zum5.xdt5ytf.x1iyjqo2.x6ikm8r.x1odjw0f.xish69e.x16o0dkt"
-                            scroll_div = target_chat.find_element(By.CSS_SELECTOR, scroll_selector)
-                            scroll_height = self.driver.execute_script("return arguments[0].scrollHeight;", scroll_div)
-                            print(scroll_height)
-                            
-                            pyperclip.copy(self.message)
-                            actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
-                            
-                            self.driver_manager.wait5.until(lambda _: textbox.text != "")  # Optional: Wait for paste effect
-                            
-                            send = WebDriverWait(target_chat, 10).until(EC.element_to_be_clickable(
-                                (By.XPATH, f"//div[@aria-label='{self.driver_manager.send_str}']")
-                            ))
-                            send.click()
-                            # actions.send_keys(Keys.ENTER).perform()
-                            
-                            # Check scroll height to ensure message was sent
-                            self.driver_manager.wait10.until(
-                                lambda driver: driver.execute_script("return arguments[0].scrollHeight;", scroll_div) > scroll_height
-                            )
-                            
-                            print(self.driver.execute_script("return arguments[0].scrollHeight;", scroll_div))
-                            
-                            close_chat = target_chat.find_element(By.XPATH, f"//div[@aria-label='{self.driver_manager.close_chat_str}']")
-                            close_chat.click()
-                            
-                            # ✅ Wait until target_chat disappears from the DOM
-                            self.driver_manager.wait5.until(EC.staleness_of(target_chat))
-                            
-                            if isFriend:
-                                status = f"✔️ {name}\n{status}"
-                            else:
-                                status = f"✔️ {name}, chưa kết bạn\n{status}"   
-                                
-                            if attempt == 3:
-                                self.driver.get(link)
-                                if "locale=" in link:
-                                    self.driver_manager.adjust_language(link.split("locale=")[1][:2])
-                                self.driver.execute_script("window.scrollTo(0, 300)")
-                                self.driver_manager.handle_chat_close()
-                            
-                            success_count += 1
+                for attempt in range(1, 6):
+                    try:
+                        # Make sure correct element is found
+                        if len(lst) < 2 or lst[1].text != self.driver_manager.message_str:
+                            status = f"{name} - Chưa kết bạn, không thể inbox\n" + status
                             break
                         
-                        except Exception as e:
-                            print("Error during message sending:", e)
-                            if self.driver.get_window_size()["width"] <= 912:
-                                self.driver.set_window_size(1130, 500)
-                            self.driver_manager.handle_chat_close()
-                            lst = self.driver_manager.wait15.until(EC.presence_of_all_elements_located(
-                                (By.XPATH, "//div[@class='xdwrcjd x2fvf9 x1xmf6yo x1w6jkce xusnbm3']")
-                            ))
+                        # Click the 'Nhắn tin' button
+                        NhanTin = self.driver_manager.wait15.until(EC.element_to_be_clickable(
+                            (By.XPATH, f"//div[@aria-label='{self.driver_manager.message_str}']")
+                        ))
+                        NhanTin.click()
+                        
+                        # Wait until chat container appears
+                        self.driver_manager.wait15.until(lambda driver: len(driver.find_elements(By.CSS_SELECTOR,
+                            "html > body > div:nth-of-type(1) > div > div > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > *")) >= 1)
+                        
+                        chat_divs = self.driver.find_elements(
+                            By.CSS_SELECTOR,
+                            "html > body > div:nth-of-type(1) > div > div > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > *"
+                        )
+                        
+                        target_chat = None
+                        
+                        for div in chat_divs:
+                            try:
+                                # Wait until the text of the div is not empty
+                                username_div = self.driver_manager.wait20.until(
+                                    lambda _: (
+                                        (hl := div.find_element(By.XPATH, "./div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]//h2")).text.strip() != "" and hl
+                                    )
+                                )
 
-                            if attempt == 5:
-                                status = f"❌ {name}\n{status}"
-                                self.main.error_link = f"{link}\n{self.main.error_link}"
-                                error_count += 1
-                                break
-                except:
-                    status = f"❌ {name}\n{status}"
-                    self.main.error_link = f"{link}\n{self.main.error_link}"
-                    error_count += 1
+                                username = username_div.text.strip()
+                                if name in username:
+                                    target_chat = div
+                                    break
+                            except Exception as e:
+                                print("Error finding chat:", e)
+                                continue
+                            
+                        if not target_chat:
+                            self.driver_manager.handle_chat_close()
+                            raise Exception("Chat not found")
+
+                        textbox = WebDriverWait(target_chat, 10).until(
+                            EC.element_to_be_clickable((By.XPATH, "//div[@aria-placeholder='Aa']"))
+                        )
+                        actions.click(textbox).perform()
+                        
+                        # Wait until it becomes the active element (cursor is inside)
+                        try:
+                            self.driver_manager.wait5.until(
+                                lambda d: d.execute_script("return document.activeElement === arguments[0];", textbox)
+                            )
+                        except:
+                            # Retry click once more if needed
+                            actions.click(textbox).perform()
+                            self.driver_manager.wait5.until(
+                                lambda d: d.execute_script("return document.activeElement === arguments[0];", textbox)
+                            )
+                        
+                        pyperclip.copy(self.message)
+                        actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
+                        
+                        self.driver_manager.wait5.until(lambda _: textbox.text != "")  # Optional: Wait for paste effect
+                        
+                        send = WebDriverWait(target_chat, 10).until(EC.element_to_be_clickable(
+                            (By.XPATH, f"//div[@aria-label='{self.driver_manager.send_str}']")
+                        ))
+                        send.click()
+                        # actions.send_keys(Keys.ENTER).perform()
+                        
+                        close_chat = target_chat.find_element(By.XPATH, f"//div[@aria-label='{self.driver_manager.close_chat_str}']")
+                        close_chat.click()
+                        
+                        # ✅ Wait until target_chat disappears from the DOM
+                        self.driver_manager.wait5.until(EC.staleness_of(target_chat))
+                        
+                        if isFriend:
+                            status = f"✔️ {name}\n{status}"
+                        else:
+                            status = f"✔️ {name}, chưa kết bạn\n{status}"   
+                            
+                        if attempt == 3:
+                            self.driver.get(link)
+                            if "locale=" in link:
+                                self.driver_manager.adjust_language(link.split("locale=")[1][:2])
+                            self.driver.execute_script("window.scrollTo(0, 300)")
+                            self.driver_manager.handle_chat_close()
+                        
+                        success_count += 1
+                        break
+                    
+                    except Exception as e:
+                        print("Error during message sending:", e)
+                        if self.driver.get_window_size()["width"] <= 912:
+                            self.driver.set_window_size(1130, 500)
+                        self.driver_manager.handle_chat_close()
+                        lst = self.driver_manager.wait15.until(EC.presence_of_all_elements_located(
+                            (By.XPATH, "//div[@class='xdwrcjd x2fvf9 x1xmf6yo x1w6jkce xusnbm3']")
+                        ))
+
+                        if attempt == 5:
+                            status = f"❌ {name}\n{status}"
+                            self.data_manager.error_link = f"{link}\n{self.data_manager.error_link}"
+                            error_count += 1
+                            break
             elif len(link.strip()) > 0:
                 status = f"❌ {link}\n{status}"
-                self.main.error_link = f"{link}\n{self.main.error_link}"
+                self.data_manager.error_link = f"{link}\n{self.data_manager.error_link}"
                 error_count += 1
-            self.main.log_updated.emit(status)
+            self.ui.sendLog.setPlainText(status)
         status = f"Đã gửi xong!!\nthành công {success_count}, lỗi {error_count}\n{status}"
-        self.main.error_link = self.main.error_link.strip()
-        self.main.log_updated.emit(status)
-        if self.main.autoSave: self.main.save_data()
+        self.data_manager.error_link = self.data_manager.error_link.strip()
+        self.ui.sendLog.setPlainText(status)
+        if self.data_manager.auto_save: self.data_manager.save_data()
         
-class Tag_thanh_vien(QRunnable):
-    def __init__(self, driver_manager: DriverManager, main: "MainWindow", action: str):
+class Tag_thanh_vien:
+    def __init__(self, driver_manager: DriverManager, ui: Ui_MainWindow, action: str, data_manager: DataManager):
         super().__init__()
         self.driver_manager = driver_manager
         self.driver = self.driver_manager.driver
-        self.main = main
         self.action = action
-        self.ui = main.ui
-        self.cookies = ""
-        self.list_name = []
-        self.comment = ""
+        self.ui = ui
+        self.data_manager = data_manager
+        self.cookies = self.data_manager.data["COOKIES"]
+        self.list_name = self.data_manager.data["TAG_THANH_VIEN"]["members"]
+        self.comment = self.data_manager.data["TAG_THANH_VIEN"]["comment"]
     def check_open_post(self):
         div = self.driver.find_element(By.XPATH, "//div[@role='banner']/following-sibling::div[1]")
         if div.get_attribute("class") == "x9f619 x1n2onr6 x1ja2u2z":
@@ -563,18 +459,18 @@ class Tag_thanh_vien(QRunnable):
         else: return True
     def tag(self):
         self.list_name = list(map(str.strip, self.ui.listName.toPlainText().split(",")))
+        if not any(name for name in self.list_name if name):
+            self.ui.tagStatus.setText("Thiếu thông tin: Tag thành viên")
+            return
         self.comment = self.ui.comment.toPlainText()
         self.list_name.append(self.comment)
-        if len(self.list_name) == 0:
-            self.main.tag_status_updated.emit("Thiếu thông tin: Tag thành viên")
-            return
         self.driver.get(self.ui.linkPost.text())
         if "locale=" in self.ui.linkPost.text():
             self.driver_manager.adjust_language(self.ui.linkPost.text().split("locale=")[1][:2])
-        if any(message in self.driver.page_source for message in self.main.error_messages):
-            self.main.tag_status_updated.emit("Không thể thao tác với bài đăng!")
+        if any(message in self.driver.page_source for message in self.driver_manager.error_messages):
+            self.ui.tagStatus.setText("Không thể thao tác với bài đăng!")
             return
-        self.main.tag_status_updated.emit("Đang tag thành viên...")
+        self.ui.tagStatus.setText("Đang tag thành viên...")
         
         actions = ActionChains(self.driver)
         delay = 1
@@ -636,40 +532,43 @@ class Tag_thanh_vien(QRunnable):
                         count_error += 1
                         break
                     if count_error >= 2:
-                        self.main.tag_status_updated.emit(f"Đã xảy ra lỗi khi tag: {error_name.strip()}")
+                        self.ui.tagStatus.setText(f"Đã xảy ra lỗi khi tag: {error_name.strip()}")
                         return
         if error_name != "":
-            self.main.tag_status_updated.emit(f"Đã tag xong, tên bị lỗi: {error_name.strip()}")
+            self.ui.tagStatus.setText(f"Đã tag xong, tên bị lỗi: {error_name.strip()}")
         else:
-            self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
-        if self.main.autoSave: self.main.save_data()
+            self.ui.tagStatus.setText("Đã tag xong, vui lòng bấm gửi comment!")
+        if self.data_manager.auto_save:
+            self.data_manager.save_data()
+            self.ui.tagStatus.setText(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}")
+            
     def get_member_name(self):
         try:
             group_id = self.ui.linkForName.text().split("groups/")[1].split("/")[0]
         except:
-            self.main.tag_status_updated.emit("Link nhóm facebook không hợp lệ")
+            self.ui.tagStatus.setText("Link nhóm facebook không hợp lệ")
             return
         if group_id == "":
-            self.main.tag_status_updated.emit("Thiếu thông tin: Link nhóm")
+            self.ui.tagStatus.setText("Thiếu thông tin: Link nhóm")
             return
         count = 0
         while 1:
             count += 1
             if count == 5:
-                self.main.tag_status_updated.emit("Xảy ra lỗi")
+                self.ui.tagStatus.setText("Xảy ra lỗi")
                 break
             try:
                 self.driver.get(f"https://www.facebook.com/groups/{group_id}/members")
                 self.driver_manager.adjust_language()
-                if any(message in self.driver.page_source for message in self.main.error_messages):
-                    self.main.tag_status_updated.emit("Không thể truy cập nhóm!")
+                if any(message in self.driver.page_source for message in self.driver_manager.error_messages):
+                    self.ui.tagStatus.setText("Không thể truy cập nhóm!")
                     return
                 try:
-                    self.main.tag_status_updated.emit("Đang lấy danh sách tên thành viên...")
+                    self.ui.tagStatus.setText("Đang lấy danh sách tên thành viên...")
                     self.driver_manager.scroll_to_bottom()
-                    list_member = self.driver.find_elements(By.XPATH,'//div[@class="html-div x11i5rnm x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1oo3vh0 x1rdy4ex"]')[-1].find_elements(By.XPATH, "./*")
+                    list_member = self.driver.find_elements(By.XPATH,'//div[@class="html-div x14z9mp x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x1oo3vh0 x1rdy4ex"]')[-1].find_elements(By.XPATH, "./*")
                 except:
-                    self.main.tag_status_updated.emit("Không thể truy cập nhóm!")
+                    self.ui.tagStatus.setText("Xảy ra lỗi!")
                     return
                 list_name_str = ""
                 member_count = 0
@@ -681,17 +580,15 @@ class Tag_thanh_vien(QRunnable):
                 break
             except:
                 self.driver_manager.handle_chat_close()
-        self.main.tag_name_updated.emit(list_name_str)
-        self.main.tag_status_updated.emit(f"Đã lấy xong danh sách tên thành viên: {member_count} người")
-        if self.main.autoSave: self.main.save_data()
+        self.ui.listName.setPlainText(list_name_str)
+        self.ui.tagStatus.setText(f"Đã lấy xong danh sách tên thành viên: {member_count} người")
+        if self.data_manager.auto_save:
+            self.data_manager.save_data()
+            self.ui.tagStatus.setText(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}")
         
-    @Slot()
     def run(self):
         if not self.driver_manager.setup_driver():
-            if self.ui.stackedWidget.currentWidget() == self.ui.send:
-                self.main.log_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
-            elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
-                self.main.tag_status_updated.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
+            self.ui.tagStatus.setText("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
             return
         self.driver = self.driver_manager.driver
         self.driver_manager.jump_to_facebook()
@@ -702,26 +599,16 @@ class Tag_thanh_vien(QRunnable):
                 self.driver.refresh()
                 self.driver_manager.wait_for_element(By.ID, "facebook")
                 if not self.driver_manager.check_login():
-                    self.main.log_updated.emit("Chưa đăng nhập, sai cookie")
+                    self.ui.tagStatus.setText("Chưa đăng nhập, sai cookie")
                     return
             else:
-                self.main.log_updated.emit("Chưa đăng nhập, vui lòng điền cookie")
+                self.ui.tagStatus.setText("Chưa đăng nhập, vui lòng điền cookie")
                 return
         if self.action == "tag":
             self.tag()
         elif self.action == "get_member_name":
             self.get_member_name()
 
-def run_gui_hoat_dong(driver_manager: DriverManager, main: "MainWindow"):
-    main.move(main.screen().size().width()- main.size().width(), main.screen().size().height() - main.size().height() - 50)
-    main.ui.logFrame.show()
-    worker = Gui_hoat_dong(driver_manager, main)
-    QThreadPool.globalInstance().start(worker)
-def run_tag_thanh_vien(driver_manager: DriverManager, main: "MainWindow", action = "tag"):
-    main.move(main.screen().size().width()- main.size().width(), main.screen().size().height() - main.size().height() - 50)
-    main.ui.logFrame.show()
-    worker = Tag_thanh_vien(driver_manager, main, action)
-    QThreadPool.globalInstance().start(worker)
 if __name__ == "__main__":
     if not os.path.exists("ChromeData"): # Nếu chưa có Folder lưu data -> Tạo
         os.makedirs("ChromeData")

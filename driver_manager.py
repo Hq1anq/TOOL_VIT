@@ -5,11 +5,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
 
-from gui.ui_interface import Ui_MainWindow
-
 class DriverManager:
-    def __init__(self):
+    def __init__(self, chrome_path: str):
         self.driver = None
+        self.chrome_path = chrome_path
         self.language = "vi"
         self.friend_str = "Bạn bè"
         self.message_str = "Nhắn tin"
@@ -27,7 +26,7 @@ class DriverManager:
             options.add_experimental_option("detach", True) # Giữ cửa sổ mở
             options.add_experimental_option("excludeSwitches", ['enable-automation'])
             currentDirectory = os.getcwd()
-            profilePath = os.path.join(currentDirectory, "ChromeData")
+            profilePath = os.path.join(currentDirectory, self.chrome_path)
             # profilePath = "D:\\demo\\ToolHanhChinh\\ChromeData"
             options.add_argument("user-data-dir=" + profilePath) # Chỉ định profile cho browser
             options.add_argument("--disable-notifications")
@@ -105,27 +104,13 @@ class DriverManager:
         if self.driver is not None:
             self.driver.quit()
             self.driver = None
-            
-    def scroll(self, scroll_times: int, timeout: float = 5.0) -> None:
-        for i in range(scroll_times):
-            try:
-                last_height = self.driver.execute_script("return document.body.scrollHeight")
-                self.driver.execute_script(f"window.scrollTo(0, {last_height - 800});")
-                
-                # Use explicit wait until scrollHeight increases
-                WebDriverWait(self.driver, timeout).until(
-                    lambda d: d.execute_script("return document.body.scrollHeight") > last_height
-                )
-            except:
-                print(f"[Scroll {i+1}] No new content loaded after scrolling.")
-                break  # Stop if no new content is loaded (e.g., reached end of page)
     
     def scroll_to_bottom(self, max_scrolls: int = 30, timeout: float = 5.0) -> None:
         """Scroll until no new content is loaded or max_scrolls is reached."""
         for i in range(max_scrolls):
             try:
                 last_height = self.driver.execute_script("return document.body.scrollHeight")
-                self.driver.execute_script(f"window.scrollTo(0, {last_height - 800});")
+                self.driver.execute_script(f"window.scrollTo(0, {last_height});")
 
                 WebDriverWait(self.driver, timeout).until(
                     lambda d: d.execute_script("return document.body.scrollHeight") > last_height

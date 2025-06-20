@@ -13,6 +13,8 @@ from PySide6.QtGui import QCursor, QFont, QIcon
 from PySide6.QtWidgets import (QCheckBox, QComboBox, QFrame, QGridLayout, QHBoxLayout,
                                QLabel, QLineEdit, QPlainTextEdit, QPushButton, QSizePolicy,
                                QStackedWidget, QVBoxLayout, QWidget)
+
+from gui.highlight_widget import HighlightPlainTextEdit, HighlightLabel
 import gui.resources_rc
 
 class Ui_MainWindow(object):
@@ -404,7 +406,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_6)
 
-        self.sendLog = QPlainTextEdit(self.logFrame)
+        self.sendLog = HighlightPlainTextEdit(self.logFrame)
         self.sendLog.setObjectName(u"sendLog")
         self.sendLog.setReadOnly(True)
 
@@ -419,7 +421,7 @@ class Ui_MainWindow(object):
         self.gridLayout_4 = QGridLayout(self.tag)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.gridLayout_4.setContentsMargins(-1, 0, -1, -1)
-        self.listName = QPlainTextEdit(self.tag)
+        self.listName = HighlightPlainTextEdit(self.tag)
         self.listName.setObjectName(u"listName")
         self.listName.setFont(font1)
 
@@ -471,7 +473,7 @@ class Ui_MainWindow(object):
 
         self.gridLayout_4.addLayout(self.verticalLayout, 5, 4, 1, 1)
 
-        self.tagStatus = QLabel(self.tag)
+        self.tagStatus = HighlightLabel(self.tag)
         self.tagStatus.setObjectName(u"tagStatus")
         self.tagStatus.setFont(font1)
 
