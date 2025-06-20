@@ -13,6 +13,7 @@ class DriverManager:
         self.language = "vi"
         self.friend_str = "Bạn bè"
         self.message_str = "Nhắn tin"
+        self.send_str = "Nhấn Enter để gửi"
         self.comment_as_str = "Bình luận dưới tên"
         self.close_chat_str = "Đóng đoạn chat"
         self.error_message = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị"]
@@ -47,6 +48,7 @@ class DriverManager:
         else: self.language = force
         if self.language != "en":
             self.message_str = "Nhắn tin"
+            self.send_str = "Nhấn Enter để gửi"
             self.comment_as_str = "Bình luận dưới tên"
             self.close_chat_str = "Đóng đoạn chat"
             self.friend_str = "Bạn bè"
@@ -54,6 +56,7 @@ class DriverManager:
             self.error_messages = ["Bạn hiện không xem được nội dung này", "Trang này không hiển thị"]
         else:
             self.message_str = "Message"
+            self.send_str = "Press enter to send"
             self.comment_as_str = "Comment as"
             self.close_chat_str = "Close chat"
             self.friend_str = "Friends"

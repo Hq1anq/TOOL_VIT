@@ -372,10 +372,10 @@ class Gui_hoat_dong(QRunnable):
                 return
         self.main.log_updated.emit("Đang gửi hoạt động...")
         status = ""
-        self.message = self.ui.message.toPlainText()
+        self.message = self.ui.message.toPlainText().strip()
         actions = ActionChains(self.driver)
         self.list_link = [x.strip() for x in self.ui.listLink.toPlainText().split("\n") if x.strip()]
-        if not bool(self.list_link):
+        if not bool(self.list_link) or self.message == "":
             self.main.log_updated.emit("Thiếu thông tin: Hoạt động")
             return
         self.main.error_link = ""
@@ -473,14 +473,31 @@ class Gui_hoat_dong(QRunnable):
                                     lambda d: d.execute_script("return document.activeElement === arguments[0];", textbox)
                                 )
                             
+                            scroll_selector = "div.x78zum5.xdt5ytf.x1iyjqo2.x6ikm8r.x1odjw0f.xish69e.x16o0dkt"
+                            scroll_div = target_chat.find_element(By.CSS_SELECTOR, scroll_selector)
+                            scroll_height = self.driver.execute_script("return arguments[0].scrollHeight;", scroll_div)
+                            print(scroll_height)
+                            
                             pyperclip.copy(self.message)
                             actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
                             
                             self.driver_manager.wait5.until(lambda _: textbox.text != "")  # Optional: Wait for paste effect
-                            actions.send_keys(Keys.ENTER).perform()
+                            
+                            send = WebDriverWait(target_chat, 10).until(EC.element_to_be_clickable(
+                                (By.XPATH, f"//div[@aria-label='{self.driver_manager.send_str}']")
+                            ))
+                            send.click()
+                            # actions.send_keys(Keys.ENTER).perform()
+                            
+                            # Check scroll height to ensure message was sent
+                            self.driver_manager.wait10.until(
+                                lambda driver: driver.execute_script("return arguments[0].scrollHeight;", scroll_div) > scroll_height
+                            )
+                            
+                            print(self.driver.execute_script("return arguments[0].scrollHeight;", scroll_div))
                             
                             close_chat = target_chat.find_element(By.XPATH, f"//div[@aria-label='{self.driver_manager.close_chat_str}']")
-                            actions.click(close_chat).perform()
+                            close_chat.click()
                             
                             # ✅ Wait until target_chat disappears from the DOM
                             self.driver_manager.wait5.until(EC.staleness_of(target_chat))
@@ -495,6 +512,7 @@ class Gui_hoat_dong(QRunnable):
                                 if "locale=" in link:
                                     self.driver_manager.adjust_language(link.split("locale=")[1][:2])
                                 self.driver.execute_script("window.scrollTo(0, 300)")
+                                self.driver_manager.handle_chat_close()
                             
                             success_count += 1
                             break
@@ -566,7 +584,6 @@ class Tag_thanh_vien(QRunnable):
             except: delay = 1
         error_name = ""
         if self.check_open_post():
-            print(1)
             suggestion_css = "div.x78zum5.xdt5ytf.xg6iff7.xippug5.x1n2onr6 > div:nth-of-type(3) > div"
         else:
             suggestion_css = "div.x78zum5.xdt5ytf.x1n2onr6.xat3117.xxzkxad > div:nth-of-type(2) > div"
