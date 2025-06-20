@@ -583,48 +583,65 @@ class Tag_thanh_vien(QRunnable):
                 delay = float(self.ui.delay.text())
             except: delay = 1
         error_name = ""
+        count_error = 0
         if self.check_open_post():
             suggestion_css = "div.x78zum5.xdt5ytf.xg6iff7.xippug5.x1n2onr6 > div:nth-of-type(3) > div"
+            actions.send_keys(Keys.TAB).perform()
         else:
             suggestion_css = "div.x78zum5.xdt5ytf.x1n2onr6.xat3117.xxzkxad > div:nth-of-type(2) > div"
         for i, name in enumerate(self.list_name):
-            if len(name) > 2:
-                for attemp in range(1, 6):
-                    try:
-                        textbox = self.driver_manager.wait10.until(
-                            EC.element_to_be_clickable((By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.driver_manager.comment_as_str}')]]"))
-                        )
-                        is_active = self.driver.execute_script("return document.activeElement === arguments[0];", textbox)
-                        if is_active == False:
-                            actions.click(textbox).perform()
-                            actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
-                            time.sleep(0.5)
-                        if i == len(self.list_name) - 1:
-                            pyperclip.copy(self.comment)
-                            actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
-                            break
-                        textbox.send_keys("@", name)
-                        if self.ui.delayCheckbox.isChecked():
-                            time.sleep(3 if attemp == 1 else delay)
-                        else:
-                            self.driver_manager.wait10.until(
-                                lambda driver: len(driver.find_element(By.CSS_SELECTOR, suggestion_css).find_elements(By.XPATH, "./*")) >= 1
-                            )
-                        textbox.send_keys(Keys.TAB)
+            for attemp in range(1, 6):
+                try:
+                    index_error = 0
+                    textbox = self.driver_manager.wait10.until(
+                        EC.element_to_be_clickable((By.XPATH, f"//div[@role='textbox' and @aria-placeholder[starts-with(., '{self.driver_manager.comment_as_str}')]]"))
+                    )
+                    index_error = 1
+                    is_active = self.driver.execute_script("return document.activeElement === arguments[0];", textbox)
+                    if is_active == False:
+                        actions.click(textbox).perform()
+                        actions.key_down(Keys.CONTROL).send_keys(Keys.END).key_up(Keys.CONTROL).perform()
                         time.sleep(0.5)
-                        textbox.send_keys(" ")
-                        
-                        if attemp == 3:
-                            self.driver.refresh()
+                    if i == len(self.list_name) - 1:
+                        pyperclip.copy(self.comment)
+                        actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
                         break
-                    except:
-                        if self.driver.get_window_size()["width"] <= 912:
-                            self.driver.set_window_size(1130, 500)
-                        self.driver_manager.handle_chat_close()
-                        if attemp == 5:
-                            error_name += name + " "
-                            break
-        self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
+                    textbox.send_keys("@", name)
+                    
+                    if self.ui.delayCheckbox.isChecked():
+                        time.sleep(3 if attemp == 1 else delay)
+                    index_error = 2
+                    self.driver_manager.wait10.until(
+                        lambda driver: len(driver.find_element(By.CSS_SELECTOR, suggestion_css).find_elements(By.XPATH, "./*")) >= 1
+                    )
+                    index_error = 3
+                    
+                    textbox.send_keys(Keys.TAB)
+                    time.sleep(0.5)
+                    textbox.send_keys(" ")
+                    break
+                except:
+                    if self.driver.get_window_size()["width"] <= 912:
+                        self.driver.set_window_size(1130, 500)
+                    self.driver_manager.handle_chat_close()
+                    if attemp == 2:
+                        if i == 0: # First name error -> clear all + re tag
+                            actions.key_down(Keys.CONTROL).send_keys('a').key_up(Keys.CONTROL).perform()
+                            actions.send_keys(Keys.BACKSPACE).perform()
+                        else: # Not first name error + have typed name -> send " "
+                            if index_error == 2:
+                                textbox.send_keys(" ")
+                    if attemp == 5:
+                        error_name += name + " "
+                        count_error += 1
+                        break
+                    if count_error >= 2:
+                        self.main.tag_status_updated.emit(f"Đã xảy ra lỗi khi tag: {error_name.strip()}")
+                        return
+        if error_name != "":
+            self.main.tag_status_updated.emit(f"Đã tag xong, tên bị lỗi: {error_name.strip()}")
+        else:
+            self.main.tag_status_updated.emit("Đã tag xong, vui lòng bấm gửi comment!")
         if self.main.autoSave: self.main.save_data()
     def get_member_name(self):
         try:
