@@ -33,7 +33,8 @@ HẠN ĐĂNG KÝ: ...'''
             "link_post": "https://www.facebook.com/groups/.../posts/...",
             "link_group": "https://www.facebook.com/groups/...",
             "members": ["Văn A", "Thị B", "Nguyễn C"],
-            "comment": "cf nào mọi người"
+            "comment": "cf nào mọi người",
+            "delay": None
         }
     }
     

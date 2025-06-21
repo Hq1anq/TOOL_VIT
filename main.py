@@ -15,31 +15,12 @@ from driver_manager import DriverManager
 from data_manager import DataManager
 
 class MainWindow(QMainWindow):
-    log_updated = Signal(str)
-    tag_status_updated = Signal(str)
-    tag_name_updated = Signal(str)
     def __init__(self):
         QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
         self.dragPos = QPoint()
-        
-        self.default_cookies = "c_user=...;fr=...;sb=...;xs=...;datr=..."
-        self.default_list_link = ["https://www.facebook.com/profile.php?id=...", "https://m.facebook.com/...",
-                                      "https://www.facebook.com/..."]
-        self.default_message = '''[VIT][ĐI DẠY]
-- Thời gian: ...
-- Địa điểm: Nhà nuôi dưỡng trẻ em Hữu Nghị Đống Đa (102 phố Yên Lãng, quận Đống Đa)
-- Số lượng: 6 - 8 TNV
-- Trang phục: Áo xanh, đeo thẻ SV
-CF ĐĂNG KÝ KÈM PHƯƠNG TIỆN (NẾU CÓ).
-HẠN ĐĂNG KÝ: ...'''
-        self.default_link_post = "https://www.facebook.com/groups/.../posts/..."
-        self.default_link_group = "https://www.facebook.com/groups/..."
-        self.default_name = ["Văn A", "Thị B", "Nguyễn C"]
-        self.default_comment = "cf nào mọi người"
-        self.file_path = "Data.xlsx"
 
         # Remove window tittle bar
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
@@ -101,10 +82,6 @@ HẠN ĐĂNG KÝ: ...'''
         self.show()
         
         self.init_textbox()
-        
-        self.log_updated.connect(self.update_log)
-        self.tag_status_updated.connect(self.update_tag_status)
-        self.tag_name_updated.connect(self.update_tag_name)
 
     def maximize_restore(self):
         if self.isMaximized():
@@ -146,25 +123,6 @@ HẠN ĐĂNG KÝ: ...'''
         else:
             self.ui.linkForName.hide()
             self.ui.getNameBtn.hide()
-            
-    def update_log(self, text):
-        self.ui.sendLog.setPlainText(text)
-        self.ui.sendLog.setStyleSheet("color: yellow")
-        QTimer.singleShot(1000, self.reset_log_color)
-    def update_tag_status(self, status):
-        self.ui.tagStatus.setText(status)
-        self.ui.tagStatus.setStyleSheet("color: yellow")
-        QTimer.singleShot(1000, self.reset_tag_color)
-    def update_tag_name(self, name):
-        self.ui.listName.setPlainText(name)
-        self.ui.listName.setStyleSheet("color: yellow")
-        QTimer.singleShot(1000, self.reset_name_color)
-    def reset_log_color(self):
-        self.ui.sendLog.setStyleSheet("color: white")
-    def reset_tag_color(self):
-        self.ui.tagStatus.setStyleSheet("color: white")
-    def reset_name_color(self):
-        self.ui.listName.setStyleSheet("color: white")
     
     def init_textbox(self):
         self.data_manager.load_data()
@@ -190,13 +148,13 @@ HẠN ĐĂNG KÝ: ...'''
         self.ui.listName.setPlainText(", ".join(list_name))
         self.ui.comment.setPlainText(comment)
         
-        self.ui.listLink.setPlaceholderText("\n".join(self.default_list_link))
-        self.ui.cookieInput.setPlaceholderText(self.default_cookies)
-        self.ui.message.setPlaceholderText(self.default_message)
+        self.ui.listLink.setPlaceholderText("\n".join(self.data_manager.DEFAULT_DATA["GUI_HOAT_DONG"]["links"]))
+        self.ui.cookieInput.setPlaceholderText(self.data_manager.DEFAULT_DATA["COOKIES"])
+        self.ui.message.setPlaceholderText(self.data_manager.DEFAULT_DATA["GUI_HOAT_DONG"]["message"])
         
-        self.ui.linkPost.setPlaceholderText(self.default_link_post)
-        self.ui.linkForName.setPlaceholderText(self.default_link_group)
-        self.ui.comment.setPlaceholderText(self.default_comment)
+        self.ui.linkPost.setPlaceholderText(self.data_manager.DEFAULT_DATA["TAG_THANH_VIEN"]["link_post"])
+        self.ui.linkForName.setPlaceholderText(self.data_manager.DEFAULT_DATA["TAG_THANH_VIEN"]["link_group"])
+        self.ui.comment.setPlaceholderText(self.data_manager.DEFAULT_DATA["TAG_THANH_VIEN"]["comment"])
         
         self.ui.fromGroupCheckbox.setChecked(False)
         self.ui.autoSave.click()
@@ -225,9 +183,10 @@ HẠN ĐĂNG KÝ: ...'''
         }
         if self.data_manager.save_data():
             if self.ui.stackedWidget.currentWidget() == self.ui.send:
-                self.ui.sendLog.setPlainText(f"Đã lưu dữ liệu vào file {self.file_path}\n{self.ui.sendLog.toPlainText()}")
+                self.ui.logFrame.show()
+                self.ui.sendLog.setPlainText(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}\n{self.ui.sendLog.toPlainText()}")
             elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
-                self.ui.tagStatus.setText(f"Đã lưu dữ liệu vào file {self.file_path}")
+                self.ui.tagStatus.setText(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}")
         else:
             if self.ui.stackedWidget.currentWidget() == self.ui.send:
                 self.ui.sendLog.setPlainText(f"Không thể lưu dữ liệu vào file đang mở\n{self.ui.sendLog.toPlainText()}")
@@ -246,24 +205,41 @@ HẠN ĐĂNG KÝ: ...'''
     
     def run_tag(self, action: str):
         self.move(self.screen().size().width()- self.size().width(), self.screen().size().height() - self.size().height() - 50)
-        tag_thanh_vien = Tag_thanh_vien(self.driver_manager, self.ui, action, self.data_manager)
-        tag_thanh_vien.run()
+        
+        # Update data before run
+        self.data_manager.data["COOKIES"] = self.ui.cookieInput.text()
+        self.data_manager.data["TAG_THANH_VIEN"]["link_post"] = self.ui.linkPost.text().strip()
+        self.data_manager.data["TAG_THANH_VIEN"]["link_group"] =  self.ui.linkForName.text().strip()
+        self.data_manager.data["TAG_THANH_VIEN"]["members"] = list(map(str.strip, self.ui.listName.toPlainText().split(",")))
+        self.data_manager.data["TAG_THANH_VIEN"]["comment"] = self.ui.comment.toPlainText().strip()
+        if self.ui.delayCheckbox.isChecked():
+            try:
+                self.data_manager.data["TAG_THANH_VIEN"]["delay"] = int(self.ui.comment.toPlainText())
+            except:
+                self.data_manager.data["TAG_THANH_VIEN"]["delay"] = 1
+        else:
+            self.data_manager.data["TAG_THANH_VIEN"]["delay"] = None
+        
+        worker = Tag_thanh_vien(self.driver_manager, action, self.data_manager)
+        # Connect signal update ui
+        worker.signals.log.connect(lambda msg: self.ui.tagStatus.setText(msg))
+        worker.signals.list_name.connect(lambda msg: self.ui.listName.setPlainText(msg))
+        
+        # ✅ Defer start by one event loop cycle to ensure all connections are live
+        QTimer.singleShot(0, lambda: QThreadPool.globalInstance().start(worker))
     
     def run_guiHD(self):
         self.move(self.screen().size().width()- self.size().width(), self.screen().size().height() - self.size().height() - 50)
         self.ui.logFrame.show()
-        QApplication.processEvents()  # Let Qt update the GUI now
         
-        # Update data before run
         self.data_manager.data["COOKIES"] = self.ui.cookieInput.text()
         self.data_manager.data["GUI_HOAT_DONG"]["links"] = [x.strip() for x in self.ui.listLink.toPlainText().split("\n") if x.strip()]
         self.data_manager.data["GUI_HOAT_DONG"]["message"] = self.ui.message.toPlainText().strip()
     
         worker = Gui_hoat_dong(self.driver_manager, self.data_manager)
-        # Connect signal update ui
         worker.signals.log.connect(lambda msg: self.ui.sendLog.setPlainText(msg))
 
-        QThreadPool.globalInstance().start(worker)
+        QTimer.singleShot(0, lambda: QThreadPool.globalInstance().start(worker))
         
 class Gui_hoat_dong(QRunnable):
     class Signals(QObject):
@@ -273,9 +249,9 @@ class Gui_hoat_dong(QRunnable):
         super().__init__()
         self.driver_manager = driver_manager
         self.data_manager = data_manager
-        self.cookies = self.data_manager.data["COOKIES"]
-        self.list_link = self.data_manager.data["GUI_HOAT_DONG"]["links"]
-        self.message = self.data_manager.data["GUI_HOAT_DONG"]["message"]
+        self.cookies: str = self.data_manager.data["COOKIES"]
+        self.list_link: list[str] = self.data_manager.data["GUI_HOAT_DONG"]["links"]
+        self.message: str = self.data_manager.data["GUI_HOAT_DONG"]["message"]
         self.signals = self.Signals()
     
     @Slot()
@@ -451,43 +427,44 @@ class Gui_hoat_dong(QRunnable):
         self.signals.log.emit(status)
         if self.data_manager.auto_save: self.data_manager.save_data()
         
-class Tag_thanh_vien:
-    def __init__(self, driver_manager: DriverManager, ui: Ui_MainWindow, action: str, data_manager: DataManager):
+class Tag_thanh_vien(QRunnable):
+    class Signals(QObject):
+        log = Signal(str)
+        list_name = Signal(str)
+        
+    def __init__(self, driver_manager: DriverManager, action: str, data_manager: DataManager):
         super().__init__()
         self.driver_manager = driver_manager
         self.driver = self.driver_manager.driver
         self.action = action
-        self.ui = ui
         self.data_manager = data_manager
-        self.cookies = self.data_manager.data["COOKIES"]
-        self.list_name = self.data_manager.data["TAG_THANH_VIEN"]["members"]
-        self.comment = self.data_manager.data["TAG_THANH_VIEN"]["comment"]
+        self.cookies: str = self.data_manager.data["COOKIES"]
+        self.link_post: str = self.data_manager.data["TAG_THANH_VIEN"]["link_post"]
+        self.link_group: str = self.data_manager.data["TAG_THANH_VIEN"]["link_group"]
+        self.list_name: list[str] = self.data_manager.data["TAG_THANH_VIEN"]["members"]
+        self.comment: str = self.data_manager.data["TAG_THANH_VIEN"]["comment"]
+        self.delay: int = self.data_manager.data["TAG_THANH_VIEN"]["delay"]
+        self.signals = self.Signals()
+        
     def check_open_post(self):
         div = self.driver.find_element(By.XPATH, "//div[@role='banner']/following-sibling::div[1]")
         if div.get_attribute("class") == "x9f619 x1n2onr6 x1ja2u2z":
             return False
         else: return True
     def tag(self):
-        self.list_name = list(map(str.strip, self.ui.listName.toPlainText().split(",")))
         if not any(name for name in self.list_name if name):
-            self.ui.tagStatus.setText("Thiếu thông tin: Tag thành viên")
+            self.signals.log.emit("Thiếu thông tin: Tag thành viên")
             return
-        self.comment = self.ui.comment.toPlainText()
         self.list_name.append(self.comment)
-        self.driver.get(self.ui.linkPost.text())
-        if "locale=" in self.ui.linkPost.text():
-            self.driver_manager.adjust_language(self.ui.linkPost.text().split("locale=")[1][:2])
+        self.driver.get(self.link_post)
+        if "locale=" in self.link_post:
+            self.driver_manager.adjust_language(self.link_post.split("locale=")[1][:2])
         if any(message in self.driver.page_source for message in self.driver_manager.error_messages):
-            self.ui.tagStatus.setText("Không thể thao tác với bài đăng!")
+            self.signals.log.emit("Không thể thao tác với bài đăng!")
             return
-        self.ui.tagStatus.setText("Đang tag thành viên...")
+        self.signals.log.emit("Đang tag thành viên...")
         
         actions = ActionChains(self.driver)
-        delay = 1
-        if self.ui.delayCheckbox.isChecked():
-            try:
-                delay = float(self.ui.delay.text())
-            except: delay = 1
         error_name = ""
         count_error = 0
         if self.check_open_post():
@@ -514,8 +491,8 @@ class Tag_thanh_vien:
                         break
                     textbox.send_keys("@", name)
                     
-                    if self.ui.delayCheckbox.isChecked():
-                        time.sleep(3 if attemp == 1 else delay)
+                    if self.delay is not None:
+                        time.sleep(3 if attemp == 1 else self.delay)
                     index_error = 2
                     self.driver_manager.wait10.until(
                         lambda driver: len(driver.find_element(By.CSS_SELECTOR, suggestion_css).find_elements(By.XPATH, "./*")) >= 1
@@ -542,43 +519,43 @@ class Tag_thanh_vien:
                         count_error += 1
                         break
                     if count_error >= 2:
-                        self.ui.tagStatus.setText(f"Đã xảy ra lỗi khi tag: {error_name.strip()}")
+                        self.signals.log.emit(f"Đã xảy ra lỗi khi tag: {error_name.strip()}")
                         return
         if error_name != "":
-            self.ui.tagStatus.setText(f"Đã tag xong, tên bị lỗi: {error_name.strip()}")
+            self.signals.log.emit(f"Đã tag xong, tên bị lỗi: {error_name.strip()}")
         else:
-            self.ui.tagStatus.setText("Đã tag xong, vui lòng bấm gửi comment!")
+            self.signals.log.emit("Đã tag xong, vui lòng bấm gửi comment!")
         if self.data_manager.auto_save:
             self.data_manager.save_data()
-            self.ui.tagStatus.setText(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}")
+            self.signals.log.emit(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}")
             
     def get_member_name(self):
         try:
-            group_id = self.ui.linkForName.text().split("groups/")[1].split("/")[0]
+            group_id = self.link_group.split("groups/")[1].split("/")[0]
         except:
-            self.ui.tagStatus.setText("Link nhóm facebook không hợp lệ")
+            self.signals.log.emit("Link nhóm facebook không hợp lệ")
             return
         if group_id == "":
-            self.ui.tagStatus.setText("Thiếu thông tin: Link nhóm")
+            self.signals.log.emit("Thiếu thông tin: Link nhóm")
             return
         count = 0
         while 1:
             count += 1
             if count == 5:
-                self.ui.tagStatus.setText("Xảy ra lỗi")
+                self.signals.log.emit("Xảy ra lỗi")
                 break
             try:
                 self.driver.get(f"https://www.facebook.com/groups/{group_id}/members")
                 self.driver_manager.adjust_language()
                 if any(message in self.driver.page_source for message in self.driver_manager.error_messages):
-                    self.ui.tagStatus.setText("Không thể truy cập nhóm!")
+                    self.signals.log.emit("Không thể truy cập nhóm!")
                     return
                 try:
-                    self.ui.tagStatus.setText("Đang lấy danh sách tên thành viên...")
+                    self.signals.log.emit("Đang lấy danh sách tên thành viên...")
                     self.driver_manager.scroll_to_bottom()
                     list_member = self.driver.find_elements(By.XPATH,'//div[@class="html-div x14z9mp x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x1oo3vh0 x1rdy4ex"]')[-1].find_elements(By.XPATH, "./*")
                 except:
-                    self.ui.tagStatus.setText("Xảy ra lỗi!")
+                    self.signals.log.emit("Xảy ra lỗi!")
                     return
                 list_name_str = ""
                 member_count = 0
@@ -590,29 +567,29 @@ class Tag_thanh_vien:
                 break
             except:
                 self.driver_manager.handle_chat_close()
-        self.ui.listName.setPlainText(list_name_str)
-        self.ui.tagStatus.setText(f"Đã lấy xong danh sách tên thành viên: {member_count} người")
+        self.signals.list_name.emit(list_name_str)
+        self.signals.log.emit(f"Đã lấy xong danh sách tên thành viên: {member_count} người")
         if self.data_manager.auto_save:
             self.data_manager.save_data()
-            self.ui.tagStatus.setText(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}")
-        
+            self.signals.log.emit(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}")
+    
+    @Slot()
     def run(self):
         if not self.driver_manager.setup_driver():
-            self.ui.tagStatus.setText("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
+            self.signals.log.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
             return
         self.driver = self.driver_manager.driver
         self.driver_manager.jump_to_facebook()
         if not self.driver_manager.is_login:
-            self.cookies = self.ui.cookieInput.text()
             if self.cookies != "":
                 self.driver_manager.add_cookie(self.cookies)
                 self.driver.refresh()
                 self.driver_manager.wait_for_element(By.ID, "facebook")
                 if not self.driver_manager.check_login():
-                    self.ui.tagStatus.setText("Chưa đăng nhập, sai cookie")
+                    self.signals.log.emit("Chưa đăng nhập, sai cookie")
                     return
             else:
-                self.ui.tagStatus.setText("Chưa đăng nhập, vui lòng điền cookie")
+                self.signals.log.emit("Chưa đăng nhập, vui lòng điền cookie")
                 return
         if self.action == "tag":
             self.tag()
