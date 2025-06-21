@@ -4,7 +4,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from PySide6.QtWidgets import QMainWindow, QApplication, QSizeGrip
-from PySide6.QtCore import QPoint, Qt, QEvent, QRunnable, Slot, QThreadPool, QTimer, Signal
+from PySide6.QtCore import QPoint, Qt, QEvent, QObject, QRunnable, Slot, QThreadPool, QTimer, Signal
 from PySide6.QtGui import QShortcut, QKeySequence, QMouseEvent
 import time, sys, os
 import pyperclip
@@ -253,44 +253,54 @@ HẠN ĐĂNG KÝ: ...'''
         self.move(self.screen().size().width()- self.size().width(), self.screen().size().height() - self.size().height() - 50)
         self.ui.logFrame.show()
         QApplication.processEvents()  # Let Qt update the GUI now
-        guiHD = Gui_hoat_dong(self.driver_manager, self.ui, self.data_manager)
-        guiHD.run()
         
-class Gui_hoat_dong:
-    def __init__(self, driver_manager: DriverManager, ui: Ui_MainWindow, data_manager: DataManager):
+        # Update data before run
+        self.data_manager.data["COOKIES"] = self.ui.cookieInput.text()
+        self.data_manager.data["GUI_HOAT_DONG"]["links"] = [x.strip() for x in self.ui.listLink.toPlainText().split("\n") if x.strip()]
+        self.data_manager.data["GUI_HOAT_DONG"]["message"] = self.ui.message.toPlainText().strip()
+    
+        worker = Gui_hoat_dong(self.driver_manager, self.data_manager)
+        # Connect signal update ui
+        worker.signals.log.connect(lambda msg: self.ui.sendLog.setPlainText(msg))
+
+        QThreadPool.globalInstance().start(worker)
+        
+class Gui_hoat_dong(QRunnable):
+    class Signals(QObject):
+        log = Signal(str)
+        
+    def __init__(self, driver_manager: DriverManager, data_manager: DataManager):
         super().__init__()
         self.driver_manager = driver_manager
-        self.ui = ui
         self.data_manager = data_manager
         self.cookies = self.data_manager.data["COOKIES"]
         self.list_link = self.data_manager.data["GUI_HOAT_DONG"]["links"]
         self.message = self.data_manager.data["GUI_HOAT_DONG"]["message"]
-        
+        self.signals = self.Signals()
+    
+    @Slot()
     def run(self):
         if not self.driver_manager.setup_driver():
-            self.ui.sendLog.setPlainText("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
+            self.signals.log.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
             return
         self.driver = self.driver_manager.driver
         self.driver_manager.jump_to_facebook()
         if not self.driver_manager.is_login:
-            self.cookies = self.ui.cookieInput.text()
             if self.cookies != "":
                 self.driver_manager.add_cookie(self.cookies)
                 self.driver.refresh()
                 self.driver_manager.wait_for_element(By.ID, "facebook")
                 if not self.driver_manager.check_login():
-                    self.ui.sendLog.setPlainText("Chưa đăng nhập, sai cookie")
+                    self.signals.log.emit("Chưa đăng nhập, sai cookie")
                     return
             else:
-                self.ui.sendLog.setPlainText("Chưa đăng nhập, vui lòng điền cookie")
+                self.signals.log.emit("Chưa đăng nhập, vui lòng điền cookie")
                 return
-        self.ui.sendLog.setPlainText("Đang gửi hoạt động...")
+        self.signals.log.emit("Đang gửi hoạt động...")
         status = ""
-        self.message = self.ui.message.toPlainText().strip()
         actions = ActionChains(self.driver)
-        self.list_link = [x.strip() for x in self.ui.listLink.toPlainText().split("\n") if x.strip()]
         if not bool(self.list_link) or self.message == "":
-            self.ui.sendLog.setPlainText("Thiếu thông tin: Hoạt động")
+            self.signals.log.emit("Thiếu thông tin: Hoạt động")
             return
         self.data_manager.error_link = ""
         success_count = 0
@@ -320,7 +330,7 @@ class Gui_hoat_dong:
                 except:
                     status = f"❌ {link}\n{status}"
                     self.data_manager.error_link = f"{link}\n{self.data_manager.error_link}"
-                    self.ui.sendLog.setPlainText(status)
+                    self.signals.log.emit(status)
                     error_count += 1
                     continue
                 for attempt in range(1, 6):
@@ -435,10 +445,10 @@ class Gui_hoat_dong:
                 status = f"❌ {link}\n{status}"
                 self.data_manager.error_link = f"{link}\n{self.data_manager.error_link}"
                 error_count += 1
-            self.ui.sendLog.setPlainText(status)
+            self.signals.log.emit(status)
         status = f"Đã gửi xong!!\nthành công {success_count}, lỗi {error_count}\n{status}"
         self.data_manager.error_link = self.data_manager.error_link.strip()
-        self.ui.sendLog.setPlainText(status)
+        self.signals.log.emit(status)
         if self.data_manager.auto_save: self.data_manager.save_data()
         
 class Tag_thanh_vien:
