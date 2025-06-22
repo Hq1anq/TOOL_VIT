@@ -18,11 +18,6 @@ class TagMembers(QRunnable):
         self.driver_manager = driver_manager
         self.driver = self.driver_manager.driver
         self.data_manager = data_manager
-        self.cookies: str = self.data_manager.data["COOKIES"]
-        self.link_post: str = self.data_manager.data["TAG_THANH_VIEN"]["link_post"]
-        self.list_name: list[str] = self.data_manager.data["TAG_THANH_VIEN"]["members"]
-        self.comment: str = self.data_manager.data["TAG_THANH_VIEN"]["comment"]
-        self.delay: int = self.data_manager.data["TAG_THANH_VIEN"]["delay"]
         self.signals = self.Signals()
         
     def check_open_post(self):
@@ -31,10 +26,16 @@ class TagMembers(QRunnable):
             return False
         else: return True
     def tag(self):
+        self.cookies: str = self.data_manager.data["COOKIES"]
+        self.link_post: str = self.data_manager.data["TAG_THANH_VIEN"]["link_post"]
+        self.list_name: list[str] = self.data_manager.data["TAG_THANH_VIEN"]["members"]
+        self.comment: str = self.data_manager.data["TAG_THANH_VIEN"]["comment"]
+        self.delay: int = self.data_manager.data["TAG_THANH_VIEN"]["delay"]
         if not any(name for name in self.list_name if name):
             self.signals.log.emit("Thiếu thông tin: Tag thành viên")
             return
         self.list_name.append(self.comment)
+        
         self.driver.get(self.link_post)
         if "locale=" in self.link_post:
             self.driver_manager.adjust_language(self.link_post.split("locale=")[1][:2])

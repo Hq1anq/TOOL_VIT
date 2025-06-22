@@ -89,8 +89,6 @@ class MainWindow(QMainWindow):
         saveData_shortcut.activated.connect(lambda: self.save_data())
         
         self.show()
-        
-        self.init_textbox()
 
     def maximize_restore(self):
         if self.isMaximized():

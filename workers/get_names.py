@@ -13,8 +13,6 @@ class GetNames(QRunnable):
         self.driver_manager = driver_manager
         self.driver = self.driver_manager.driver
         self.data_manager = data_manager
-        self.cookies: str = self.data_manager.data["COOKIES"]
-        self.link_group: str = self.data_manager.data["TAG_THANH_VIEN"]["link_group"]
         self.signals = self.Signals()
         
     def check_open_post(self):
@@ -24,6 +22,8 @@ class GetNames(QRunnable):
         else: return True
             
     def get_member_name(self):
+        self.cookies: str = self.data_manager.data["COOKIES"]
+        self.link_group: str = self.data_manager.data["TAG_THANH_VIEN"]["link_group"]
         try:
             group_id = self.link_group.split("groups/")[1].split("/")[0]
         except:

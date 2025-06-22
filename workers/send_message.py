@@ -16,13 +16,13 @@ class SendMessage(QRunnable):
         super().__init__()
         self.driver_manager = driver_manager
         self.data_manager = data_manager
-        self.cookies: str = self.data_manager.data["COOKIES"]
-        self.list_link: list[str] = self.data_manager.data["GUI_HOAT_DONG"]["links"]
-        self.message: str = self.data_manager.data["GUI_HOAT_DONG"]["message"]
         self.signals = self.Signals()
     
     @Slot()
     def run(self):
+        self.cookies: str = self.data_manager.data["COOKIES"]
+        self.list_link: list[str] = self.data_manager.data["GUI_HOAT_DONG"]["links"]
+        self.message: str = self.data_manager.data["GUI_HOAT_DONG"]["message"]
         if not self.driver_manager.setup_driver():
             self.signals.log.emit("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
             return

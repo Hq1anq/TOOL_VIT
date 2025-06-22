@@ -42,7 +42,7 @@ HẠN ĐĂNG KÝ: ...'''
         self.folder_path = DATA_FOLDER
         self.data_path = DATA_PATH
         self.chrome_path = CHROME_DATA_PATH
-        self.auto_save = False
+        self.auto_save = True
         self.error_link = ""
         self._ensure_data_directory()
         
