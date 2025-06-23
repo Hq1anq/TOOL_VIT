@@ -5,6 +5,7 @@ import pyperclip
 
 from gui.ui_interface import Ui_MainWindow
 from gui.custom_grips import CustomGrip
+from gui.window_control import WindowController
 
 from manager import DataManager, DriverManager
 from workers import SendMessage, TagMembers, GetNames
@@ -15,46 +16,15 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
+        self.window_controller = WindowController(self)
         self.dragPos = QPoint()
 
-        # Remove window tittle bar
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-
-        def doubleClickMaximizeRestore(event: QMouseEvent):
-            if event.type() == QEvent.Type.MouseButtonDblClick:
-                self.ui.changeWindowBtn.click()
-        self.ui.contentTop.mouseDoubleClickEvent = doubleClickMaximizeRestore
-
-        def moveWindow(event: QMouseEvent):
-            if self.isMaximized() == True:
-                self.showNormal()
-                self.move(event.globalPosition().toPoint() - QPoint(900/2, 0))
-            if event.buttons() == Qt.MouseButton.LeftButton:
-                self.move(self.pos() + event.globalPosition().toPoint() - self.dragPos)
-                self.dragPos = event.globalPosition().toPoint()
-                event.accept()
-        
-        self.ui.dragLabel.mouseMoveEvent = moveWindow
-        # Resize window
-        self.sizegrip = QSizeGrip(self.ui.sizeGrip)
-        self.sizegrip.setStyleSheet("width: 20px; height: 20px; margin 0px; padding: 0px;")
-        # CUSTOM GRIPS
-        self.left_grip = CustomGrip(self, Qt.Edge.LeftEdge, True)
-        self.right_grip = CustomGrip(self, Qt.Edge.RightEdge, True)
-        self.top_grip = CustomGrip(self, Qt.Edge.TopEdge, True)
-        self.bottom_grip = CustomGrip(self, Qt.Edge.BottomEdge, True)
-
-        self.left_grip.setGeometry(0, 5, 5, self.height())
-        self.right_grip.setGeometry(self.width() - 5, 5, 5, self.height())
-        self.top_grip.setGeometry(0, 0, self.width(), 5)
-        self.bottom_grip.setGeometry(0, self.height() - 5, self.width(), 5)
         # Minimize window
         self.ui.minimizeBtn.clicked.connect(self.showMinimized)
         # Close window
         self.ui.closeBtn.clicked.connect(self.close)
         # Restore/Maximize window
-        self.ui.changeWindowBtn.clicked.connect(self.maximize_restore)
+        self.ui.changeWindowBtn.clicked.connect(self.window_controller.maximize_restore)
         
         self.data_manager = DataManager()
         self.init_textbox()
@@ -90,32 +60,13 @@ class MainWindow(QMainWindow):
         
         self.show()
 
-    def maximize_restore(self):
-        if self.isMaximized():
-            self.showNormal()
-            self.ui.sizeGrip.show()
-            self.left_grip.show()
-            self.right_grip.show()
-            self.top_grip.show()
-            self.bottom_grip.show()
-        else:
-            self.showMaximized()
-            self.ui.sizeGrip.hide()
-            self.left_grip.hide()
-            self.right_grip.hide()
-            self.top_grip.hide()
-            self.bottom_grip.hide()
     def mousePressEvent(self, event):
         # Get the current position of the mouse
-        self.dragPos = event.globalPosition().toPoint()
-    def resize_grips(self):
-        self.left_grip.setGeometry(0, 5, 5, self.height())
-        self.right_grip.setGeometry(self.width() - 5, 5, 5, self.height())
-        self.top_grip.setGeometry(0, 0, self.width(), 5)
-        self.bottom_grip.setGeometry(0, self.height() - 5, self.width(), 5)
+        self.window_controller.handle_mouse_press(event)
+        
     def resizeEvent(self, event):
         # Update Size Grips
-        self.resize_grips()
+        self.window_controller.update_grips_geometry()
         
     def chooseFunction(self):
         currentFunc = self.ui.comboBox.currentText()

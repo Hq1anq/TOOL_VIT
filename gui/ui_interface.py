@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QFrame, QGridLayout, QHBoxL
                                QStackedWidget, QVBoxLayout, QWidget)
 
 from gui.highlight_widget import HighlightPlainTextEdit, HighlightLabel
-import gui.resources_rc
+import resources.resources_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
