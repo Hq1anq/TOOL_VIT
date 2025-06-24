@@ -28,7 +28,7 @@ class TagMembers(QRunnable):
     def tag(self):
         self.cookies: str = self.data_manager.data["COOKIES"]
         self.link_post: str = self.data_manager.data["TAG_THANH_VIEN"]["link_post"]
-        self.list_name: list[str] = self.data_manager.data["TAG_THANH_VIEN"]["members"]
+        self.list_name: list[str] = self.data_manager.data["TAG_THANH_VIEN"]["members"].copy()
         self.comment: str = self.data_manager.data["TAG_THANH_VIEN"]["comment"]
         self.delay: int = self.data_manager.data["TAG_THANH_VIEN"]["delay"]
         if not any(name for name in self.list_name if name):
@@ -72,7 +72,7 @@ class TagMembers(QRunnable):
                     textbox.send_keys("@", name)
                     
                     if self.delay is not None:
-                        time.sleep(3 if attemp == 1 else self.delay)
+                        time.sleep(3 if i == 0 else self.delay)
                     index_error = 2
                     self.driver_manager.wait10.until(
                         lambda driver: len(driver.find_element(By.CSS_SELECTOR, suggestion_css).find_elements(By.XPATH, "./*")) >= 1
