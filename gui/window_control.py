@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QSizeGrip
-from PySide6.QtCore import Qt, QPoint, QEvent
+from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QMouseEvent
 from gui.custom_grips import CustomGrip
 from gui.ui_interface import Ui_MainWindow
@@ -9,6 +9,7 @@ class WindowController:
         self.window = window
         self.ui: Ui_MainWindow = window.ui
         self.dragPos = None
+        self._normal_geometry = None  # Save normal geometry before maximize
         
         # Remove window tittle bar
         self.window.setWindowFlags(Qt.WindowType.FramelessWindowHint)
@@ -26,10 +27,27 @@ class WindowController:
                 
         def moveWindow(event: QMouseEvent):
             if self.ui.changeWindowBtn.isChecked(): # Window is maximize
+                
+                # Calculate offset from mouse to window's top-left in normal geometry
+                mouse_global = event.globalPosition().toPoint()
+                maximize_geometry = self.window.geometry()
+                
+                # Restore window to normal
                 self.ui.changeWindowBtn.setChecked(False)
                 self.maximize_restore(False)
+                
                 # Center the cursor on the window when dragging from maximized state
                 # self.window.move(event.globalPosition().toPoint() - QPoint(self.window.width()/2, 0))
+                
+                # Move window so mouse stays at the same relative position
+                x_ratio = (mouse_global.x() - maximize_geometry.x()) / maximize_geometry.width()
+                y_ratio = (mouse_global.y() - maximize_geometry.y()) / maximize_geometry.height()
+                # Move window so that mouse is at the same relative position on restored window
+                new_x = mouse_global.x() - x_ratio * self._normal_geometry.width()
+                new_y = mouse_global.y() - y_ratio * self._normal_geometry.height()
+                self.window.move(new_x, new_y)
+                # Update dragPos for smooth dragging
+                self.dragPos = mouse_global
             if event.buttons() == Qt.MouseButton.LeftButton:
                 self.window.move(self.window.pos() + event.globalPosition().toPoint() - self.dragPos)
                 self.dragPos = event.globalPosition().toPoint()
@@ -65,6 +83,7 @@ class WindowController:
             self.ui.sizeGrip.show()
             self._show_grips()
         else:
+            self._normal_geometry = self.window.geometry()
             self.window.showMaximized()
             self.ui.sizeGrip.hide()
             self._hide_grips()

@@ -228,7 +228,7 @@ border: none; padding: none; padding-left: 10px; padding-right: 10px</string>
           <string> cre: h0anq.qianq</string>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources/resources.qrc">
            <normaloff>:/icons/icons/meta.svg</normaloff>:/icons/icons/meta.svg</iconset>
          </property>
         </widget>
@@ -309,7 +309,7 @@ border: none</string>
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="resources.qrc">
+          <iconset resource="../resources/resources.qrc">
            <normaloff>:/icons/icons/autoSaveOff.svg</normaloff>
            <normalon>:/icons/icons/autoSaveOn-01.svg</normalon>:/icons/icons/autoSaveOff.svg</iconset>
          </property>
@@ -380,7 +380,7 @@ border: none</string>
              </font>
             </property>
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset resource="../resources/resources.qrc">
               <normaloff>:/icons/icons/minimize.svg</normaloff>:/icons/icons/minimize.svg</iconset>
             </property>
            </widget>
@@ -388,7 +388,7 @@ border: none</string>
           <item>
            <widget class="QPushButton" name="changeWindowBtn">
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset resource="../resources/resources.qrc">
               <normaloff>:/icons/icons/maximize.svg</normaloff>
               <normalon>:/icons/icons/restore.svg</normalon>:/icons/icons/maximize.svg</iconset>
             </property>
@@ -400,7 +400,7 @@ border: none</string>
           <item>
            <widget class="QPushButton" name="closeBtn">
             <property name="icon">
-             <iconset resource="resources.qrc">
+             <iconset resource="../resources/resources.qrc">
               <normaloff>:/icons/icons/close.svg</normaloff>:/icons/icons/close.svg</iconset>
             </property>
            </widget>
@@ -467,7 +467,7 @@ border: none</string>
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="resources.qrc">
+           <iconset resource="../resources/resources.qrc">
             <normaloff>:/icons/icons/post.svg</normaloff>:/icons/icons/post.svg</iconset>
           </property>
           <property name="iconSize">
@@ -590,7 +590,7 @@ border: none</string>
                 <string/>
                </property>
                <property name="icon">
-                <iconset resource="resources.qrc">
+                <iconset resource="../resources/resources.qrc">
                  <normaloff>:/icons/icons/copy.svg</normaloff>:/icons/icons/copy.svg</iconset>
                </property>
                <property name="iconSize">
@@ -764,7 +764,7 @@ border: none</string>
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="resources.qrc">
+           <iconset resource="../resources/resources.qrc">
             <normaloff>:/icons/icons/post.svg</normaloff>:/icons/icons/post.svg</iconset>
           </property>
           <property name="iconSize">
@@ -789,7 +789,7 @@ border: none</string>
            <string>Lấy từ nhóm facebook</string>
           </property>
           <property name="icon">
-           <iconset resource="resources.qrc">
+           <iconset resource="../resources/resources.qrc">
             <normaloff>:/icons/icons/ImportFromGroup.svg</normaloff>:/icons/icons/ImportFromGroup.svg</iconset>
           </property>
           <property name="iconSize">
@@ -869,7 +869,7 @@ border: none</string>
   </widget>
  </widget>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="../resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
