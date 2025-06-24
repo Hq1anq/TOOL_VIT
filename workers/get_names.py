@@ -63,9 +63,7 @@ class GetNames(QRunnable):
                 self.driver_manager.handle_chat_close()
         self.signals.list_name.emit(list_name_str)
         self.signals.log.emit(f"Đã lấy xong danh sách tên thành viên: {member_count} người")
-        if self.data_manager.auto_save:
-            self.data_manager.save_data()
-            self.signals.log.emit(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}")
+        if self.data_manager.auto_save: self.data_manager.save_data()
     
     @Slot()
     def run(self):

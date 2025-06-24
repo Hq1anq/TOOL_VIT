@@ -105,9 +105,7 @@ class TagMembers(QRunnable):
             self.signals.log.emit(f"Đã tag xong, tên bị lỗi: {error_name.strip()}")
         else:
             self.signals.log.emit("Đã tag xong, vui lòng bấm gửi comment!")
-        if self.data_manager.auto_save:
-            self.data_manager.save_data()
-            self.signals.log.emit(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}")
+        if self.data_manager.auto_save: self.data_manager.save_data()
     
     @Slot()
     def run(self):

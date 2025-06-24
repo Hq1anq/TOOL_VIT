@@ -192,6 +192,4 @@ class SendMessage(QRunnable):
         status = f"Đã gửi xong!!\nthành công {success_count}, lỗi {error_count}\n{status}"
         self.data_manager.error_link = self.data_manager.error_link.strip()
         self.signals.log.emit(status)
-        if self.data_manager.auto_save:
-            self.data_manager.save_data()
-            self.signals.log.emit(f"Đã lưu dữ liệu vào file {self.data_manager.data_path}")
+        if self.data_manager.auto_save: self.data_manager.save_data()
