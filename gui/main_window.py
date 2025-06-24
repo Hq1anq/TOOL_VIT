@@ -4,10 +4,9 @@ from PySide6.QtGui import QShortcut, QKeySequence, QMouseEvent
 import pyperclip
 
 from gui.ui_interface import Ui_MainWindow
-from gui.custom_grips import CustomGrip
 from gui.window_control import WindowController
 
-from manager import DataManager, DriverManager
+from managers import DataManager, DriverManager
 from workers import SendMessage, TagMembers, GetNames
 
 class MainWindow(QMainWindow):
@@ -25,9 +24,9 @@ class MainWindow(QMainWindow):
         self.ui.closeBtn.clicked.connect(self.close)
         # Restore/Maximize window
         self.ui.changeWindowBtn.clicked.connect(self.window_controller.maximize_restore)
-        
+
         self.data_manager = DataManager()
-        self.init_textbox()
+        self.data_manager.load_data()
         self.driver_manager = DriverManager(self.data_manager.chrome_path)
         self.send = SendMessage(self.driver_manager, self.data_manager)
         self.tag = TagMembers(self.driver_manager, self.data_manager)
@@ -59,6 +58,7 @@ class MainWindow(QMainWindow):
         saveData_shortcut.activated.connect(lambda: self.save_data())
         
         self.show()
+        self.init_textbox()
 
     def mousePressEvent(self, event):
         # Get the current position of the mouse
@@ -83,7 +83,6 @@ class MainWindow(QMainWindow):
             self.ui.getNameBtn.hide()
     
     def init_textbox(self):
-        self.data_manager.load_data()
         data = self.data_manager.data
         cookies = data["COOKIES"]
         
@@ -96,7 +95,8 @@ class MainWindow(QMainWindow):
         link_group = data["TAG_THANH_VIEN"]["link_group"]
         list_name = data["TAG_THANH_VIEN"]["members"]
         comment = data["TAG_THANH_VIEN"]["comment"]
-                
+        delay_value = data["TAG_THANH_VIEN"]["delay"]
+
         self.ui.cookieInput.setText(cookies)
         self.ui.listLink.setPlainText("\n".join(list_link))
         self.ui.message.setPlainText(message)
@@ -106,6 +106,15 @@ class MainWindow(QMainWindow):
         self.ui.listName.setPlainText(", ".join(list_name))
         self.ui.comment.setPlainText(comment)
         
+        if delay_value is not None:
+            self.ui.delay.setText(str(delay_value))
+            self.ui.delayCheckbox.setChecked(True)
+            self.ui.delay.show()
+            self.ui.delayLabel.show()
+        else:
+            self.ui.delay.hide()
+            self.ui.delayLabel.hide()
+            
         self.ui.listLink.setPlaceholderText("\n".join(self.data_manager.DEFAULT_DATA["GUI_HOAT_DONG"]["links"]))
         self.ui.cookieInput.setPlaceholderText(self.data_manager.DEFAULT_DATA["COOKIES"])
         self.ui.message.setPlaceholderText(self.data_manager.DEFAULT_DATA["GUI_HOAT_DONG"]["message"])
@@ -118,8 +127,6 @@ class MainWindow(QMainWindow):
         self.ui.autoSave.click()
         self.ui.linkForName.hide()
         self.ui.getNameBtn.hide()
-        self.ui.delay.hide()
-        self.ui.delayLabel.hide()
         self.ui.logFrame.hide()
         
     def copy_error_link(self):
@@ -133,7 +140,7 @@ class MainWindow(QMainWindow):
             "message": self.ui.message.toPlainText().strip()
         }
         
-        if self.ui.delayCheckbox.isChecked() or self.ui.delay.text() == "":
+        if (not self.ui.delayCheckbox.isChecked()) or self.ui.delay.text() == "":
             delay_value = None
         else:
             delay_value = int(self.ui.delay.text())

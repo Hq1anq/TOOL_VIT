@@ -6,7 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from PySide6.QtCore import QObject, QRunnable, Slot, Signal
 import pyperclip
 
-from manager import DataManager, DriverManager
+from managers import DataManager, DriverManager
 
 class SendMessage(QRunnable):
     class Signals(QObject):

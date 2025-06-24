@@ -1,7 +1,5 @@
 import json
 import os
-import pandas as pd
-from typing import Dict, Any, Optional
 
 DATA_FOLDER = "data"
 CHROME_DATA_PATH = DATA_FOLDER + "/ChromeData"

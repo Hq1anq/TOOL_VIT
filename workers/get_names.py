@@ -1,7 +1,7 @@
 from selenium.webdriver.common.by import By
 from PySide6.QtCore import QObject, QRunnable, Slot, Signal
 
-from manager import DataManager, DriverManager
+from managers import DataManager, DriverManager
 
 class GetNames(QRunnable):
     class Signals(QObject):

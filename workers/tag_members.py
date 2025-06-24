@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, QRunnable, Slot, Signal
 import time
 import pyperclip
 
-from manager import DataManager, DriverManager
+from managers import DataManager, DriverManager
 
 class TagMembers(QRunnable):
     class Signals(QObject):
