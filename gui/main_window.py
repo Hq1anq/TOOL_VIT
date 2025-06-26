@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QMainWindow, QSizeGrip
-from PySide6.QtCore import QPoint, Qt, QEvent, QThreadPool
-from PySide6.QtGui import QShortcut, QKeySequence, QMouseEvent
+from PySide6.QtWidgets import QMainWindow
+from PySide6.QtCore import QPoint, QThreadPool
+from PySide6.QtGui import QShortcut, QKeySequence
 import pyperclip
 
 from gui.ui_interface import Ui_MainWindow
