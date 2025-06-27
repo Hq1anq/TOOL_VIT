@@ -20,7 +20,12 @@
    <property name="styleSheet">
     <string notr="true">#centralwidget { background-color: #2C313A }
 #contentTop { background-color: rgb(33, 37, 43) }
+#bottomBar QPushButton {
+	font-size: 11px; color: rgb(113, 126, 149);
+	border: none;
+	padding: 0 5px}
 *{ border: none }
+#send, #tag { background-color: rgb(40, 44, 52) }
 QWidget{
 	color: rgb(221, 221, 221);
 	font: 10pt &quot;Segoe UI&quot; }
@@ -219,10 +224,6 @@ QMenu::item:selected { /* when user selects item using mouse or keyboard */
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">font-size: 11px; color: rgb(113, 126, 149);
-border: none; padding: none; padding-left: 10px; padding-right: 10px</string>
          </property>
          <property name="text">
           <string> cre: h0anq.qianq</string>
@@ -439,7 +440,7 @@ border: none</string>
     <item row="2" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="send">
        <layout class="QGridLayout" name="gridLayout_2">
