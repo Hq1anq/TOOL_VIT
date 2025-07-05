@@ -172,7 +172,7 @@ class MainWindow(QMainWindow):
             elif self.ui.stackedWidget.currentWidget() == self.ui.tag:
                 self.ui.tagStatus.setText("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
             return
-        self.driver_manager.driver.execute_script('window.open("https://www.facebook.com/h0anq.qianq/")')
+        self.driver_manager.driver.execute_script('window.open("https://github.com/Hq1anq")')
         self.driver_manager.driver.switch_to.window(self.driver_manager.driver.window_handles[0])
     
     def run_guiHD(self):

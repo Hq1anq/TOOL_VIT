@@ -4,7 +4,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from PySide6.QtCore import QObject, QRunnable, Slot, Signal
-import pyperclip
+import pyperclip, time
 
 from managers import DataManager, DriverManager
 
@@ -55,7 +55,7 @@ class SendMessage(QRunnable):
                 try:
                     self.driver.get(link)
                     if any(message in self.driver.page_source for message in self.driver_manager.error_messages):
-                        raise Exception(f"Error user link")
+                        raise Exception(f"Error user link: {link}")
                     if "locale=" in link:
                         self.driver_manager.adjust_language(link.split("locale=")[1][:2])
                     self.driver.execute_script("window.scrollTo(0, 300)")
@@ -114,12 +114,12 @@ class SendMessage(QRunnable):
                                     target_chat = div
                                     break
                             except Exception as e:
-                                print("Error finding chat:", e)
+                                print(f"{name} Error finding chat: {e}")
                                 continue
                             
                         if not target_chat:
                             self.driver_manager.handle_chat_close()
-                            raise Exception("Chat not found")
+                            raise Exception(f"{name} Chat not found")
 
                         textbox = WebDriverWait(target_chat, 10).until(
                             EC.element_to_be_clickable((By.XPATH, "//div[@aria-placeholder='Aa']"))
@@ -148,6 +148,8 @@ class SendMessage(QRunnable):
                         ))
                         send.click()
                         # actions.send_keys(Keys.ENTER).perform()
+                        
+                        time.sleep(1) # delay after send_message action
                         
                         close_chat = target_chat.find_element(By.XPATH, f"//div[@aria-label='{self.driver_manager.close_chat_str}']")
                         close_chat.click()
