@@ -9,6 +9,10 @@ from gui.window_control import WindowController
 from managers import DataManager, DriverManager
 from workers import SendMessage, TagMembers, GetNames
 
+DATA_FOLDER = "data"
+CHROME_PATH = DATA_FOLDER + "/ChromeData"
+DATA_PATH = DATA_FOLDER + "/Data.json"
+
 class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
@@ -25,9 +29,9 @@ class MainWindow(QMainWindow):
         # Restore/Maximize window
         self.ui.changeWindowBtn.clicked.connect(self.window_controller.maximize_restore)
 
-        self.data_manager = DataManager()
+        self.data_manager = DataManager(DATA_FOLDER, DATA_PATH)
         self.data_manager.load_data()
-        self.driver_manager = DriverManager(self.data_manager.chrome_path)
+        self.driver_manager = DriverManager(CHROME_PATH)
         self.send = SendMessage(self.driver_manager, self.data_manager)
         self.tag = TagMembers(self.driver_manager, self.data_manager)
         self.get_names = GetNames(self.driver_manager, self.data_manager)

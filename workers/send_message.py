@@ -54,8 +54,6 @@ class SendMessage(QRunnable):
                     link = "https://web." + link
                 try:
                     self.driver.get(link)
-                    if any(message in self.driver.page_source for message in self.driver_manager.error_messages):
-                        raise Exception(f"Error user link: {link}")
                     if "locale=" in link:
                         self.driver_manager.adjust_language(link.split("locale=")[1][:2])
                     self.driver.execute_script("window.scrollTo(0, 300)")
@@ -174,6 +172,12 @@ class SendMessage(QRunnable):
                     
                     except Exception as e:
                         print("Error during message sending:", e)
+                        if any(message in self.driver.page_source for message in self.driver_manager.error_messages):
+                            status = f"❌ {link}\n{status}"
+                            self.data_manager.error_link = f"{link}\n{self.data_manager.error_link}"
+                            self.signals.log.emit(status)
+                            error_count += 1
+                            break
                         if self.driver.get_window_size()["width"] <= 912:
                             self.driver.set_window_size(1130, 500)
                         self.driver_manager.handle_chat_close()
