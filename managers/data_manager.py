@@ -35,7 +35,7 @@ HẠN ĐĂNG KÝ: ...'''
     def __init__(self, data_folder: str, data_path: str):
         self.folder_path = data_folder
         self.data_path = data_path
-        self.auto_save = True
+        self.auto_save = False
         self.error_link = ""
         self._ensure_data_directory()
         

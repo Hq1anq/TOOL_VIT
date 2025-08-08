@@ -164,7 +164,7 @@ class Ui_MainWindow(object):
 "	border-radius: 5px;\n"
 "	border: 2px solid rgb(33, 37, 43);\n"
 "	padding-left: 3px;\n"
-"	selection-color: rgb(255, 255, 255);\n"
+"	selection-color: rgb(40, 44, 52);\n"
 "	selection-background-color: rgb(255, 121, 198) }\n"
 "QPlainTextEdit:hover, QLineEdit:hover { border: 2px solid rgb(64, 71, 88) }\n"
 "QPlainTextEdit:focus, QLineEdit:focus { border: 2px solid rgb(91, 101, 124) }\n"
