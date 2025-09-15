@@ -37,6 +37,7 @@ HẠN ĐĂNG KÝ: ...'''
         self.data_path = data_path
         self.auto_save = False
         self.error_link = ""
+        self.data = self.DEFAULT_DATA
         self._ensure_data_directory()
         
         if not os.path.exists(self.data_path): # Nếu chưa có file data -> Tạo (kèm luôn sheet Login)
