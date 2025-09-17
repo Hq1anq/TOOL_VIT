@@ -26,7 +26,6 @@ class TagMembers(QRunnable):
             return False
         else: return True
     def tag(self):
-        self.cookies: str = self.data_manager.data["COOKIES"]
         self.link_post: str = self.data_manager.data["TAG_THANH_VIEN"]["link_post"]
         self.list_name: list[str] = self.data_manager.data["TAG_THANH_VIEN"]["members"].copy()
         self.comment: str = self.data_manager.data["TAG_THANH_VIEN"]["comment"]
@@ -115,6 +114,7 @@ class TagMembers(QRunnable):
         self.driver = self.driver_manager.driver
         self.driver_manager.jump_to_facebook()
         if not self.driver_manager.is_login:
+            self.cookies: str = self.data_manager.data["COOKIES"]
             if self.cookies != "":
                 self.driver_manager.add_cookie(self.cookies)
                 self.driver.refresh()

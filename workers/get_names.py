@@ -22,7 +22,6 @@ class GetNames(QRunnable):
         else: return True
             
     def get_member_name(self):
-        self.cookies: str = self.data_manager.data["COOKIES"]
         self.link_group: str = self.data_manager.data["TAG_THANH_VIEN"]["link_group"]
         try:
             group_id = self.link_group.split("groups/")[1].split("/")[0]
@@ -75,6 +74,7 @@ class GetNames(QRunnable):
         self.driver = self.driver_manager.driver
         self.driver_manager.jump_to_facebook()
         if not self.driver_manager.is_login:
+            self.cookies: str = self.data_manager.data["COOKIES"]
             if self.cookies != "":
                 self.driver_manager.add_cookie(self.cookies)
                 self.driver.refresh()
