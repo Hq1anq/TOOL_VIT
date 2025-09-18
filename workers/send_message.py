@@ -118,6 +118,8 @@ class SendMessage(QRunnable):
                         if not target_chat:
                             self.driver_manager.handle_chat_close()
                             raise Exception(f"{name} Chat not found")
+                        
+                        time.sleep(0.5)
 
                         textbox = WebDriverWait(target_chat, 10).until(
                             EC.element_to_be_clickable((By.XPATH, "//div[@aria-placeholder='Aa']"))

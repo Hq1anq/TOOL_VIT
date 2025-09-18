@@ -170,6 +170,7 @@ class MainWindow(QMainWindow):
             return
     def access_credit(self):
         self.move(self.screen().size().width()- self.size().width(), self.screen().size().height() - self.size().height() - 50)
+        self.ui.logFrame.show()
         if not self.driver_manager.setup_driver():
             if self.ui.stackedWidget.currentWidget() == self.ui.send:
                 self.ui.sendLog.setPlainText("Xung đột! Vui lòng đóng tất cả các trình duyệt Chrome")
