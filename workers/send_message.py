@@ -103,11 +103,13 @@ class SendMessage(QRunnable):
                                 # Wait until the text of the div is not empty
                                 username_div = self.driver_manager.wait20.until(
                                     lambda _: (
-                                        (hl := div.find_element(By.XPATH, "./div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]//h2")).text.strip() != "" and hl
+                                        (link := div.find_element(By.XPATH, "./div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/a"))
+                                        and link.get_attribute("aria-label").strip() not in ("", None)
+                                        and link
                                     )
                                 )
 
-                                username = username_div.text.strip()
+                                username = username_div.get_attribute("aria-label").strip()
                                 if name in username:
                                     target_chat = div
                                     break
