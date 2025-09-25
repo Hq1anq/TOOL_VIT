@@ -124,7 +124,7 @@ class SendMessage(QRunnable):
                         time.sleep(0.5)
 
                         textbox = WebDriverWait(target_chat, 10).until(
-                            EC.element_to_be_clickable((By.XPATH, "//div[@aria-placeholder='Aa']"))
+                            EC.element_to_be_clickable((By.XPATH, ".//div[@aria-placeholder='Aa']"))
                         )
                         actions.click(textbox).perform()
                         
@@ -143,10 +143,14 @@ class SendMessage(QRunnable):
                         pyperclip.copy(self.message)
                         actions.key_down(Keys.CONTROL).send_keys('v').key_up(Keys.CONTROL).perform()
                         
-                        self.driver_manager.wait5.until(lambda _: textbox.text != "")  # Optional: Wait for paste effect
+                        # Optional: Wait for paste effect
+                        self.driver_manager.wait5.until(
+                            lambda d: d.execute_script("return arguments[0].innerText.trim().length > 0;", textbox)
+                        )
+                        # self.driver_manager.wait5.until(lambda _: textbox.text != "")
                         
                         send = WebDriverWait(target_chat, 10).until(EC.element_to_be_clickable(
-                            (By.XPATH, f"//div[@aria-label='{self.driver_manager.send_str}']")
+                            (By.XPATH, f".//div[@aria-label='{self.driver_manager.send_str}']")
                         ))
                         send.click()
                         # actions.send_keys(Keys.ENTER).perform()
