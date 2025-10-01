@@ -164,14 +164,13 @@ class Ui_MainWindow(object):
 "	border-radius: 5px;\n"
 "	border: 2px solid rgb(33, 37, 43);\n"
 "	padding-left: 3px;\n"
-"	selection-color: rgb(40, 44, 52);\n"
+"       selection-color: rgb(40, 44, 52);\n"
 "	selection-background-color: rgb(255, 121, 198) }\n"
 "QPlainTextEdit:hover, QLineEdit:hover { border: 2px solid rgb(64, 71, 88) }\n"
 "QPlainTextEdit:focus, QLineEdit:focus { border: 2px solid rgb(91, 101, 124) }\n"
 "QMenu {\n"
-"	bac"
-                        "kground-color: rgb(51, 57, 66);\n"
-"    border: 1px solid black;\n"
+"	background-color: rgb(51, 57, 66);\n"
+"       border: 1px solid black;\n"
 "}\n"
 "\n"
 "QMenu::item {\n"
@@ -201,6 +200,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.credits.sizePolicy().hasHeightForWidth())
         self.credits.setSizePolicy(sizePolicy)
+        self.credits.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         icon = QIcon()
         icon.addFile(u":/icons/icons/meta.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.credits.setIcon(icon)
@@ -241,6 +241,7 @@ class Ui_MainWindow(object):
         self.autoSave.setObjectName(u"autoSave")
         sizePolicy.setHeightForWidth(self.autoSave.sizePolicy().hasHeightForWidth())
         self.autoSave.setSizePolicy(sizePolicy)
+        self.autoSave.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.autoSave.setStyleSheet(u"background-color: transparent;\n"
 "border: none")
         icon1 = QIcon()
@@ -256,6 +257,7 @@ class Ui_MainWindow(object):
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.setObjectName(u"comboBox")
+        self.comboBox.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         self._15.addWidget(self.comboBox)
 
@@ -282,6 +284,7 @@ class Ui_MainWindow(object):
         font.setBold(True)
         font.setItalic(False)
         self.minimizeBtn.setFont(font)
+        self.minimizeBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         icon2 = QIcon()
         icon2.addFile(u":/icons/icons/minimize.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.minimizeBtn.setIcon(icon2)
@@ -290,6 +293,7 @@ class Ui_MainWindow(object):
 
         self.changeWindowBtn = QPushButton(self.navigationBar)
         self.changeWindowBtn.setObjectName(u"changeWindowBtn")
+        self.changeWindowBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         icon3 = QIcon()
         icon3.addFile(u":/icons/icons/maximize.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         icon3.addFile(u":/icons/icons/restore.svg", QSize(), QIcon.Mode.Normal, QIcon.State.On)
@@ -300,6 +304,7 @@ class Ui_MainWindow(object):
 
         self.closeBtn = QPushButton(self.navigationBar)
         self.closeBtn.setObjectName(u"closeBtn")
+        self.closeBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         icon4 = QIcon()
         icon4.addFile(u":/icons/icons/close.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.closeBtn.setIcon(icon4)
@@ -343,6 +348,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.sendOK.sizePolicy().hasHeightForWidth())
         self.sendOK.setSizePolicy(sizePolicy)
         self.sendOK.setMinimumSize(QSize(0, 70))
+        self.sendOK.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.sendOK.setToolTipDuration(2000)
         icon5 = QIcon()
         icon5.addFile(u":/icons/icons/post.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
@@ -398,6 +404,7 @@ class Ui_MainWindow(object):
         self.copyLogBtn = QPushButton(self.logFrame)
         self.copyLogBtn.setObjectName(u"copyLogBtn")
         self.copyLogBtn.setMaximumSize(QSize(30, 33))
+        self.copyLogBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.copyLogBtn.setToolTipDuration(3000)
         icon6 = QIcon()
         icon6.addFile(u":/icons/icons/copy.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
@@ -458,6 +465,7 @@ class Ui_MainWindow(object):
         self.delayCheckbox.setObjectName(u"delayCheckbox")
         sizePolicy.setHeightForWidth(self.delayCheckbox.sizePolicy().hasHeightForWidth())
         self.delayCheckbox.setSizePolicy(sizePolicy)
+        self.delayCheckbox.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         self.verticalLayout.addWidget(self.delayCheckbox)
 
@@ -484,6 +492,7 @@ class Ui_MainWindow(object):
 
         self.getNameBtn = QPushButton(self.tag)
         self.getNameBtn.setObjectName(u"getNameBtn")
+        self.getNameBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.getNameBtn.setToolTipDuration(3000)
 
         self.gridLayout_4.addWidget(self.getNameBtn, 3, 5, 1, 1)
@@ -493,6 +502,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.tagOK.sizePolicy().hasHeightForWidth())
         self.tagOK.setSizePolicy(sizePolicy)
         self.tagOK.setMinimumSize(QSize(0, 70))
+        self.tagOK.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.tagOK.setToolTipDuration(2000)
         self.tagOK.setIcon(icon5)
         self.tagOK.setIconSize(QSize(50, 50))
@@ -502,6 +512,7 @@ class Ui_MainWindow(object):
         self.fromGroupCheckbox = QCheckBox(self.tag)
         self.fromGroupCheckbox.setObjectName(u"fromGroupCheckbox")
         self.fromGroupCheckbox.setFont(font1)
+        self.fromGroupCheckbox.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         icon7 = QIcon()
         icon7.addFile(u":/icons/icons/ImportFromGroup.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.fromGroupCheckbox.setIcon(icon7)

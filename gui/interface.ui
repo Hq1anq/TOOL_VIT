@@ -153,23 +153,18 @@ QPlainTextEdit, QLineEdit {
 	border-radius: 5px;
 	border: 2px solid rgb(33, 37, 43);
 	padding-left: 3px;
-  selection-color: rgb(40, 44, 52);
+	selection-color: rgb(40, 44, 52);
 	selection-background-color: rgb(255, 121, 198) }
 QPlainTextEdit:hover, QLineEdit:hover { border: 2px solid rgb(64, 71, 88) }
 QPlainTextEdit:focus, QLineEdit:focus { border: 2px solid rgb(91, 101, 124) }
 QMenu {
 	background-color: rgb(51, 57, 66);
-    border: 1px solid black;
-}
-
+	border: 1px solid black; }
 QMenu::item {
     background-color: transparent;
-    color: rgb(221, 221, 221);
-}
-
+    color: rgb(221, 221, 221); }
 QMenu::item:selected { /* when user selects item using mouse or keyboard */
-    background-color: #654321;
-}</string>
+    background-color: #654321; }</string>
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <property name="leftMargin">
@@ -224,6 +219,9 @@ QMenu::item:selected { /* when user selects item using mouse or keyboard */
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
          </property>
          <property name="text">
           <string> cre: h0anq.qianq</string>
@@ -302,6 +300,9 @@ QLabel { qproperty-alignment: AlignVCenter }</string>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="styleSheet">
           <string notr="true">background-color: transparent;
 border: none</string>
@@ -327,6 +328,9 @@ border: none</string>
        </item>
        <item>
         <widget class="QComboBox" name="comboBox">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <item>
           <property name="text">
            <string>GỬI HOẠT ĐỘNG</string>
@@ -380,6 +384,9 @@ border: none</string>
               <bold>true</bold>
              </font>
             </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="icon">
              <iconset resource="../resources/resources.qrc">
               <normaloff>:/icons/icons/minimize.svg</normaloff>:/icons/icons/minimize.svg</iconset>
@@ -388,6 +395,9 @@ border: none</string>
           </item>
           <item>
            <widget class="QPushButton" name="changeWindowBtn">
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="icon">
              <iconset resource="../resources/resources.qrc">
               <normaloff>:/icons/icons/maximize.svg</normaloff>
@@ -400,6 +410,9 @@ border: none</string>
           </item>
           <item>
            <widget class="QPushButton" name="closeBtn">
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="icon">
              <iconset resource="../resources/resources.qrc">
               <normaloff>:/icons/icons/close.svg</normaloff>:/icons/icons/close.svg</iconset>
@@ -440,7 +453,7 @@ border: none</string>
     <item row="2" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="send">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -457,6 +470,9 @@ border: none</string>
             <width>0</width>
             <height>70</height>
            </size>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="toolTip">
            <string>Gửi!</string>
@@ -581,6 +597,9 @@ border: none</string>
                  <height>33</height>
                 </size>
                </property>
+               <property name="cursor">
+                <cursorShape>PointingHandCursor</cursorShape>
+               </property>
                <property name="toolTip">
                 <string>Copy các link bị lỗi</string>
                </property>
@@ -686,6 +705,9 @@ border: none</string>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="text">
              <string>Delay</string>
             </property>
@@ -730,6 +752,9 @@ border: none</string>
         </item>
         <item row="3" column="5">
          <widget class="QPushButton" name="getNameBtn">
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
           <property name="toolTip">
            <string>Lấy list thành viên của nhóm</string>
           </property>
@@ -754,6 +779,9 @@ border: none</string>
             <width>0</width>
             <height>70</height>
            </size>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="toolTip">
            <string>Tag!</string>
@@ -785,6 +813,9 @@ border: none</string>
             <italic>false</italic>
             <bold>false</bold>
            </font>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="text">
            <string>Lấy từ nhóm facebook</string>
